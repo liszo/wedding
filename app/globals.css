@@ -1,19 +1,61 @@
 @import "tailwindcss";
 @import "@fontsource-variable/vazirmatn";
+@import "@fontsource/gulzar/arabic-400.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --night: #17121f;
+  --night-raised: #221a2e;
+  --candle: #f5c97e;
+  --saffron: #de8b3d;
+  --pomegranate: #93243a;
+  --mist: #efe9f2;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-night: var(--night);
+  --color-raised: var(--night-raised);
+  --color-candle: var(--candle);
+  --color-saffron: var(--saffron);
+  --color-pomegranate: var(--pomegranate);
+  --color-mist: var(--mist);
+
   --font-sans: "Vazirmatn Variable", system-ui, sans-serif;
+  --font-display: "Gulzar", "Vazirmatn Variable", serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--night);
+  color: var(--mist);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The signature: a mirrored reflection fading into the dark */
+.reflect {
+  transform: scaleY(-1);
+  opacity: 0.28;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 55%, #000 100%);
+  mask-image: linear-gradient(to bottom, transparent 55%, #000 100%);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Nastaliq needs room to breathe — its strokes descend far below the line */
+.nastaliq {
+  font-family: var(--font-display);
+  line-height: 2.1;
+  padding-block: 0.15em;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
