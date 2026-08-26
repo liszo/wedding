@@ -1,21 +1,21 @@
-"use client";
-import { motion } from "motion/react";
-import { slideIn, stagger } from "@/lib/motion";
+import { getGuest } from "@/lib/guest";
+import LostLinkModal from "@/components/LostLinkModal";
+import { wedding } from "@/content/config";
 
-export default function Home() {
+export default async function Home() {
+  const guest = await getGuest();
+
   return (
-    <motion.main
-      variants={stagger}
-      initial="hidden"
-      animate="show"
-      className="flex flex-col gap-4 p-10"
-    >
-      <motion.h1 variants={slideIn} className="text-4xl font-bold">
-        سلام دننیا
-      </motion.h1>
-      <motion.p variants={slideIn} className="ps-8 text-lg">
-        این متن باید از سمت راست شروع شود.
-      </motion.p>
-    </motion.main>
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 p-8 text-center">
+      {guest ? (
+        <h1 className="text-3xl font-bold">{guest.name} عزیز، خوش آمدی</h1>
+      ) : (
+        <h1 className="text-3xl font-bold">به دعوت‌نامه‌ی ما خوش آمدید</h1>
+      )}
+
+      <p className="text-lg opacity-70">{wedding.dateFa}</p>
+
+      {!guest && <LostLinkModal />}
+    </main>
   );
 }
