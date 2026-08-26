@@ -11,7 +11,7 @@ export default function Home() {
       className="flex flex-col gap-4 p-10"
     >
       <motion.h1 variants={slideIn} className="text-4xl font-bold">
-        سلام دنیا
+        سلام دننیا
       </motion.h1>
       <motion.p variants={slideIn} className="ps-8 text-lg">
         این متن باید از سمت راست شروع شود.
