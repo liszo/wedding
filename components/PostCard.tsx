@@ -1,13 +1,17 @@
 import type { WallPost } from "@/lib/posts";
 import { agoFa } from "@/lib/time";
 import DeletePost from "./DeletePost";
+import Reactions from "./Reactions";
+import Comments from "./Comments";
 
 export default function PostCard({
   post,
   admin,
+  signedIn,
 }: {
   post: WallPost;
   admin: boolean;
+  signedIn: boolean;
 }) {
   return (
     <article className="rounded-3xl bg-raised/60 p-5 ring-1 ring-mist/8">
@@ -33,6 +37,17 @@ export default function PostCard({
           className="mt-3 w-full rounded-2xl ring-1 ring-mist/10"
         />
       )}
+
+      <Reactions
+        postId={post.id}
+        initial={post.reactions}
+        canReact={signedIn}
+      />
+      <Comments
+        postId={post.id}
+        comments={post.comments}
+        canWrite={signedIn}
+      />
     </article>
   );
 }

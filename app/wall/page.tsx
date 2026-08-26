@@ -9,11 +9,8 @@ import LostLinkModal from "@/components/LostLinkModal";
 export const dynamic = "force-dynamic";
 
 export default async function Wall() {
-  const [guest, admin, posts] = await Promise.all([
-    getGuest(),
-    isAdmin(),
-    listPosts(),
-  ]);
+  const [guest, admin] = await Promise.all([getGuest(), isAdmin()]);
+  const posts = await listPosts(guest?.id ?? null);
 
   return (
     <main className="mx-auto max-w-md px-5 py-10">
@@ -42,7 +39,12 @@ export default async function Wall() {
           </p>
         )}
         {posts.map((p) => (
-          <PostCard key={p.id} post={p} admin={admin} />
+          <PostCard
+            key={p.id}
+            post={p}
+            admin={admin}
+            signedIn={Boolean(guest)}
+          />
         ))}
       </div>
     </main>
