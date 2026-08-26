@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getGuest } from "@/lib/guest";
 import { getMyRsvp } from "@/lib/rsvp-read";
 import { rsvpClosed } from "@/lib/rsvp";
@@ -27,7 +28,14 @@ export default async function Home() {
           <LostLinkModal />
         </div>
       )}
-
+      <div className="pb-10 text-center">
+      <Link
+        href="/wall"
+        className="rounded-xl bg-candle/10 px-6 py-3 text-sm text-candle ring-1 ring-candle/20"
+      >
+        دیوار ما
+      </Link>
+    </div>
       <footer className="pb-28 text-center text-xs text-mist/25">
         منتظر دیدنت هستیم
       </footer>
