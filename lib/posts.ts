@@ -4,7 +4,8 @@ import { KINDS, type Kind } from "./reactions";
 export type WallComment = {
   id: string;
   author: string;
-  body: string;
+  body: string | null;
+  sticker: string | null;
   created_at: string;
 };
 
@@ -32,7 +33,7 @@ export async function listPosts(
   const { data } = await db()
     .from("posts")
     .select(
-      "id, body, image_url, created_at, guests(name), reactions(kind, guest_id), comments(id, body, created_at, guests(name))"
+      "id, body, image_url, created_at, guests(name), reactions(kind, guest_id), comments(id, body, sticker, created_at, guests(name))"
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -53,13 +54,15 @@ export async function listPosts(
       .map((c) => {
         const row = c as {
           id: string;
-          body: string;
+          body: string | null;
+          sticker: string | null;
           created_at: string;
           guests: unknown;
         };
         return {
           id: row.id,
-          body: row.body,
+          body: row.body ?? null,
+          sticker: row.sticker ?? null,
           created_at: row.created_at,
           author: nameOf(row.guests),
         };

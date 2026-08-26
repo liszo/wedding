@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { motion } from "motion/react";
-import { GLYPH, type Kind } from "@/lib/reactions";
+import { type Kind } from "@/lib/reactions";
+import Sticker from "./Sticker";
 import type { ReactionState } from "@/lib/posts";
 import { toFa } from "@/lib/fa";
 
@@ -60,7 +61,7 @@ export default function Reactions({
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 500, damping: 18 }}
           >
-            {GLYPH[r.kind]}
+            <Sticker id={r.kind} size={20} />
           </motion.span>
           {r.count > 0 && (
             <span className="tabular text-xs text-mist/60">
