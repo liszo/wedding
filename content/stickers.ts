@@ -1,5 +1,5 @@
 /** Flip to true once your six PNGs are in public/stickers/ */
-export const STICKERS_READY = false;
+export const STICKERS_READY = true;
 
 export type Sticker = {
   id: string;

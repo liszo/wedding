@@ -22,10 +22,12 @@ export default function Comments({
   const [picker, setPicker] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
 
   async function send(sticker?: string) {
     if (!sticker && !text.trim()) return;
     setBusy(true);
+    setErr("");
     try {
       const r = await fetch("/api/comments", {
         method: "POST",
@@ -34,11 +36,17 @@ export default function Comments({
           sticker ? { post_id: postId, sticker } : { post_id: postId, body: text }
         ),
       });
+      const j = await r.json().catch(() => ({}));
+
       if (r.ok) {
         setText("");
         setPicker(false);
         router.refresh();
+      } else {
+        setErr(j.message ?? `خطا (${r.status})`);
       }
+    } catch {
+      setErr("خطا در ارتباط.");
     } finally {
       setBusy(false);
     }
@@ -114,6 +122,10 @@ export default function Comments({
                   </div>
 
                   <StickerPicker open={picker} onPick={(id) => send(id)} />
+
+                  {err && (
+                    <p className="mt-2 text-xs text-pomegranate">{err}</p>
+                  )}
                 </div>
               )}
             </div>
