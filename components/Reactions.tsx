@@ -49,11 +49,11 @@ export default function Reactions({
           onClick={() => toggle(r.kind)}
           disabled={!canReact}
           aria-pressed={r.mine}
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition ${
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${
             r.mine
-              ? "bg-candle/20 ring-1 ring-candle/40"
-              : "bg-mist/5 ring-1 ring-mist/10"
-          } ${canReact ? "hover:bg-mist/10" : "cursor-default opacity-60"}`}
+              ? "border-olive/45 bg-olive/12"
+              : "border-gold-pale bg-sunk/40"
+          } ${canReact ? "hover:border-olive/45" : "cursor-default opacity-60"}`}
         >
           <motion.span
             key={`${r.kind}-${r.mine}`}
@@ -64,7 +64,7 @@ export default function Reactions({
             <Sticker id={r.kind} size={20} />
           </motion.span>
           {r.count > 0 && (
-            <span className="tabular text-xs text-mist/60">
+            <span className="tabular text-xs text-muted">
               {toFa(r.count)}
             </span>
           )}

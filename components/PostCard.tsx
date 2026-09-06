@@ -14,17 +14,19 @@ export default function PostCard({
   signedIn: boolean;
 }) {
   return (
-    <article className="rounded-3xl bg-raised/60 p-5 ring-1 ring-mist/8">
+    <article className="leaf rounded-[20px] p-5">
       <header className="mb-3 flex items-baseline justify-between gap-3">
-        <span className="text-sm text-candle/80">{post.author}</span>
+        <span className="text-sm text-gold-ink">{post.author}</span>
         <div className="flex items-center gap-3">
-          <time className="text-xs text-mist/35">{agoFa(post.created_at)}</time>
+          <time dateTime={post.created_at} className="text-xs text-muted/75">
+            {agoFa(post.created_at)}
+          </time>
           {admin && <DeletePost id={post.id} />}
         </div>
       </header>
 
       {post.body && (
-        <p className="whitespace-pre-wrap text-sm leading-7 text-mist/85">
+        <p className="whitespace-pre-wrap text-sm leading-7 text-ink">
           {post.body}
         </p>
       )}
@@ -32,9 +34,10 @@ export default function PostCard({
       {post.image_url && (
         <img
           src={post.image_url}
-          alt=""
+          alt={`عکسی از ${post.author}`}
           loading="lazy"
-          className="mt-3 w-full rounded-2xl ring-1 ring-mist/10"
+          decoding="async"
+          className="mt-3 w-full rounded-2xl border border-gold-pale"
         />
       )}
 

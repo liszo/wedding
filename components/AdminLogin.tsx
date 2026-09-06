@@ -21,20 +21,31 @@ export default function AdminLogin() {
 
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">
-      <div className="w-full max-w-xs rounded-3xl bg-raised/70 p-7 ring-1 ring-candle/10">
-        <h1 className="mb-5 text-center text-lg text-candle">ورود مدیر</h1>
+      <div className="leaf w-full max-w-xs rounded-[20px] p-7">
+        <h1 className="nastaliq mb-5 text-center text-2xl text-gold-deep">
+          ورود مدیر
+        </h1>
+        <label htmlFor="admin-password" className="sr-only">
+          رمز مدیر
+        </label>
         <input
+          id="admin-password"
           type="password"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          className="mb-3 w-full rounded-xl bg-night/50 px-4 py-3 text-sm ring-1 ring-mist/10 outline-none focus:ring-candle/40"
+          className="mb-3 w-full rounded-xl border border-gold-pale bg-sunk/40 px-4 py-3 text-sm outline-none focus:border-olive"
         />
-        {msg && <p className="mb-3 text-sm text-pomegranate">{msg}</p>}
+        {msg && (
+          <p role="status" className="mb-3 text-sm text-crimson">
+            {msg}
+          </p>
+        )}
         <button
           disabled={busy}
           onClick={submit}
-          className="w-full rounded-xl bg-candle py-3 text-sm font-medium text-night disabled:opacity-50"
+          className="w-full rounded-xl bg-olive py-3 text-sm font-medium text-paper transition hover:bg-olive-deep disabled:opacity-50"
         >
           {busy ? "..." : "ورود"}
         </button>

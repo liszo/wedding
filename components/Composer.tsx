@@ -58,23 +58,31 @@ export default function Composer() {
   }
 
   return (
-    <div className="rounded-3xl bg-raised/70 p-5 ring-1 ring-candle/10">
+    <div className="leaf rounded-[20px] p-5">
+      <label htmlFor="wall-body" className="sr-only">
+        پیام برای دیوار
+      </label>
       <textarea
+        id="wall-body"
         value={body}
         onChange={(e) => setBody(e.target.value)}
         maxLength={500}
         rows={3}
         placeholder="چیزی برای ما بنویس..."
-        className="w-full resize-none rounded-xl bg-night/50 p-4 text-sm ring-1 ring-mist/10 outline-none placeholder:text-mist/30 focus:ring-candle/40"
+        className="w-full resize-none rounded-xl border border-gold-pale bg-sunk/40 p-4 text-sm outline-none placeholder:text-muted/60 focus:border-olive"
       />
 
       {preview && (
         <div className="relative mt-3">
-          <img src={preview} alt="" className="w-full rounded-2xl ring-1 ring-mist/10" />
+          <img
+            src={preview}
+            alt="پیش‌نمایش عکس انتخاب‌شده"
+            className="w-full rounded-2xl border border-gold-pale"
+          />
           <button
             onClick={clearImage}
             aria-label="حذف عکس"
-            className="absolute end-3 top-3 h-8 w-8 rounded-full bg-night/80 text-mist backdrop-blur-sm"
+            className="absolute end-3 top-3 h-8 w-8 rounded-full bg-ink/75 text-lg leading-none text-paper backdrop-blur-sm"
           >
             ×
           </button>
@@ -92,20 +100,24 @@ export default function Composer() {
       <div className="mt-3 flex gap-2">
         <button
           onClick={() => fileRef.current?.click()}
-          className="rounded-xl bg-candle/10 px-4 py-3 text-sm text-candle ring-1 ring-candle/20"
+          className="rounded-xl border border-gold-pale px-4 py-3 text-sm text-gold-ink transition hover:bg-sunk"
         >
           عکس
         </button>
         <button
           disabled={busy || (!body.trim() && !blob)}
           onClick={submit}
-          className="flex-1 rounded-xl bg-candle py-3 text-sm font-medium text-night transition hover:bg-saffron disabled:opacity-40"
+          className="flex-1 rounded-xl bg-olive py-3 text-sm font-medium text-paper transition hover:bg-olive-deep disabled:opacity-40"
         >
           {busy ? "..." : "بفرست"}
         </button>
       </div>
 
-      {msg && <p className="mt-3 text-center text-sm text-candle">{msg}</p>}
+      {msg && (
+        <p role="status" className="mt-3 text-center text-sm text-gold-ink">
+          {msg}
+        </p>
+      )}
     </div>
   );
 }

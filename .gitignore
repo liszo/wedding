@@ -43,3 +43,17 @@ next-env.d.ts
 #guests
 guest-links.csv
 guests.csv
+
+# per-machine Claude Code permission allowlist; .claude/launch.json is shared
+.claude/settings.local.json
+
+# raw purchases and rejects, 47MB — see design/ASSETS.md
+design-source
+
+# 91 source SVGs, 6.3MB. They are the master copies for re-exporting a gold
+# PNG at a different size, not runtime assets — keep them locally, not in git.
+design/vector-source
+
+# public/design and public/stickers ARE generated (npm run assets) but they are
+# committed on purpose: Vercel builds from git, and ~1.4MB of checked-in WebP is
+# a cheaper bet two weeks out than a build step that depends on sharp resolving.

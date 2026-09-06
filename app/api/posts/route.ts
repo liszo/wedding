@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { db } from "@/lib/supabase";
 import { getGuest } from "@/lib/guest";
-import { tooMany, clientIp } from "@/lib/rate-limit";
+// Posting requires a signed-in guest, so the limit keys on the guest rather
+// than the IP — a household behind one connection should not throttle itself.
+import { tooMany } from "@/lib/rate-limit";
 
 const BUCKET = "wall";
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -29,6 +31,7 @@ export async function POST(req: Request) {
   const file = form.get("image");
 
   let image_url: string | null = null;
+  let uploadedKey: string | null = null;
 
   if (file instanceof File && file.size > 0) {
     if (file.size > MAX_BYTES)
@@ -47,6 +50,7 @@ export async function POST(req: Request) {
         { status: 500 }
       );
 
+    uploadedKey = key;
     image_url = db().storage.from(BUCKET).getPublicUrl(key).data.publicUrl;
   }
 
@@ -60,8 +64,11 @@ export async function POST(req: Request) {
     .from("posts")
     .insert({ guest_id: guest.id, body: body || null, image_url });
 
-  if (error)
+  if (error) {
+    // the upload already landed — don't leave it orphaned in the bucket
+    if (uploadedKey) await db().storage.from(BUCKET).remove([uploadedKey]);
     return NextResponse.json({ message: "ثبت نشد." }, { status: 500 });
+  }
 
   return NextResponse.json({ message: "ثبت شد." });
 }

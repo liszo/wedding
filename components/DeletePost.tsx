@@ -22,7 +22,7 @@ export default function DeletePost({ id }: { id: string }) {
     return (
       <button
         onClick={() => setConfirming(true)}
-        className="text-xs text-mist/30 hover:text-pomegranate"
+        className="text-xs text-muted/70 transition hover:text-crimson"
       >
         حذف
       </button>
@@ -33,11 +33,11 @@ export default function DeletePost({ id }: { id: string }) {
       <button
         disabled={busy}
         onClick={remove}
-        className="text-pomegranate disabled:opacity-50"
+        className="text-crimson disabled:opacity-50"
       >
         مطمئنم
       </button>
-      <button onClick={() => setConfirming(false)} className="text-mist/40">
+      <button onClick={() => setConfirming(false)} className="text-muted">
         بی‌خیال
       </button>
     </span>

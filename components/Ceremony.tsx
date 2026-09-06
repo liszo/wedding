@@ -1,61 +1,102 @@
 import { wedding } from "@/content/config";
-import { googleCalendarUrl, neshanUrl, googleMapsUrl } from "@/lib/calendar";
+import { googleCalendarUrl, neshanUrl } from "@/lib/calendar";
+import { SectionHead, FLORAL, ORNAMENT } from "./ui";
+import Reveal from "./Reveal";
 
+function CalendarIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className="h-3.5 w-3.5 shrink-0 fill-none stroke-current stroke-[1.2]"
+    >
+      <rect x="3" y="5" width="18" height="16" rx="1" />
+      <path d="M8 3v4M16 3v4M3 10h18" />
+    </svg>
+  );
+}
+
+function MapIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className="h-3.5 w-3.5 shrink-0 fill-none stroke-current stroke-[1.2]"
+    >
+      <path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3z" />
+      <path d="M9 3v15M15 6v15" />
+    </svg>
+  );
+}
+
+/**
+ * Sits on an olive band. The venue illustration is a white floral arch on a
+ * transparent ground, which is exactly why it lives here rather than on paper
+ * — the white reads as light against the dark green instead of disappearing.
+ */
 export default function Ceremony() {
   return (
-    <section className="px-6 pb-24">
-      <div className="mx-auto max-w-md rounded-3xl bg-raised/70 p-7 ring-1 ring-candle/10">
-        <h2 className="mb-6 text-center text-lg text-candle">مراسم</h2>
+    <>
+      <SectionHead
+        id="ceremony-h"
+        eyebrow="کجا کنار هم باشیم"
+        title="مکان مراسم"
+        mark={ORNAMENT.ruleWide}
+        under={null}
+        tone="olive"
+        className="mb-4"
+      />
 
-        <dl className="space-y-4 text-sm">
-          <div className="flex justify-between gap-4">
-            <dt className="text-mist/45">تاریخ</dt>
-            <dd>
-              {wedding.weekdayFa} {wedding.dateFa}
-            </dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt className="text-mist/45">ساعت</dt>
-            <dd>{wedding.timeFa}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt className="text-mist/45">مکان</dt>
-            <dd className="text-end">{wedding.venue.name}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt className="text-mist/45">نشانی</dt>
-            <dd className="text-end leading-relaxed">{wedding.venue.address}</dd>
-          </div>
-        </dl>
+      <Reveal>
+        <div className="text-center">
+          <img
+            src={FLORAL.arch}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            decoding="async"
+            className="mx-auto mb-3 block w-full max-w-[264px]"
+          />
 
-        <div className="mt-7 grid grid-cols-2 gap-3">
+          <h3 className="nastaliq text-[23px] text-[#F6F3E7]">
+            {wedding.venue.name}
+          </h3>
+          <p className="text-[13.5px] leading-[1.9] text-on-olive-soft">
+            {wedding.venue.address}
+          </p>
+          <p className="mt-2 text-[12.5px] tracking-[0.12em] text-gold-lite">
+            {wedding.weekdayFa} {wedding.dateFa} — {wedding.timeFa}
+          </p>
+
+          <div className="mx-auto mt-6 flex max-w-[330px] gap-2.5">
+            <a
+              href="/invite.ics"
+              className="flex flex-1 items-center justify-center gap-[7px] rounded-xl border border-paper bg-paper px-2 py-3.5 text-[12.5px] text-olive-ink transition hover:bg-paper-lite"
+            >
+              <CalendarIcon />
+              افزودن به تقویم
+            </a>
+            <a
+              href={neshanUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-1 items-center justify-center gap-[7px] rounded-xl border border-gold-lite/55 px-2 py-3.5 text-[12.5px] text-on-olive transition hover:bg-paper/10"
+            >
+              <MapIcon />
+              مسیریابی
+            </a>
+          </div>
+
           <a
-            href={neshanUrl()}
+            href={googleCalendarUrl()}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-xl bg-candle/12 py-3 text-center text-sm text-candle ring-1 ring-candle/20 transition hover:bg-candle/20"
+            className="mt-3.5 inline-block text-[11px] text-on-olive-soft underline underline-offset-4 transition hover:text-gold-lite"
           >
-            نشان
-          </a>
-          <a
-            href={googleMapsUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-xl bg-candle/12 py-3 text-center text-sm text-candle ring-1 ring-candle/20 transition hover:bg-candle/20"
-          >
-            گوگل مپ
+            یا افزودن به تقویم گوگل
           </a>
         </div>
-
-        <a
-          href={googleCalendarUrl()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 block rounded-xl bg-candle py-3.5 text-center text-sm font-medium text-night transition hover:bg-saffron"
-        >
-          افزودن به تقویم
-        </a>
-      </div>
-    </section>
+      </Reveal>
+    </>
   );
 }

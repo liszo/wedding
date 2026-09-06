@@ -19,14 +19,14 @@ export default function StickerPicker({
           exit={{ opacity: 0, height: 0 }}
           className="overflow-hidden"
         >
-          <div className="mt-2 grid grid-cols-6 gap-2 rounded-2xl bg-night/50 p-3 ring-1 ring-mist/10">
+          <div className="mt-2 grid grid-cols-6 gap-2 rounded-2xl border border-gold-pale bg-sunk/40 p-3">
             {STICKERS.map((s) => (
               <button
                 key={s.id}
                 onClick={() => onPick(s.id)}
                 title={s.label}
                 aria-label={s.label}
-                className="flex aspect-square items-center justify-center rounded-xl transition hover:bg-candle/15 active:scale-90"
+                className="flex aspect-square items-center justify-center rounded-xl transition hover:bg-gold/15 active:scale-90"
               >
                 <Sticker id={s.id} size={30} />
               </button>

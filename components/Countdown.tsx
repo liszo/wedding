@@ -1,56 +1,78 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { wedding } from "@/content/config";
 import { toFa, pad2 } from "@/lib/fa";
 
-type Left = { d: number; h: number; m: number; s: number };
+const TARGET = new Date(wedding.dateISO).getTime();
 
-function remaining(): Left | null {
-  const ms = new Date(wedding.dateISO).getTime() - Date.now();
-  if (ms <= 0) return null;
-  return {
-    d: Math.floor(ms / 86_400_000),
-    h: Math.floor(ms / 3_600_000) % 24,
-    m: Math.floor(ms / 60_000) % 60,
-    s: Math.floor(ms / 1000) % 60,
-  };
+/**
+ * "Now" is an external system, not React state — the server has no answer for
+ * it and the client's answer changes every second. useSyncExternalStore is the
+ * shape React wants for this, and it avoids the cascading render a
+ * setState-in-effect mount gate causes.
+ */
+function subscribe(onChange: () => void) {
+  const t = setInterval(onChange, 1000);
+  return () => clearInterval(t);
+}
+
+/** Whole seconds, so the snapshot is stable between ticks. */
+function snapshot(): number {
+  return Math.max(0, Math.floor((TARGET - Date.now()) / 1000));
+}
+
+function serverSnapshot(): null {
+  return null;
 }
 
 export default function Countdown() {
-  const [left, setLeft] = useState<Left | null>(null);
-  const [ready, setReady] = useState(false);
+  const secs = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
 
-  useEffect(() => {
-    setLeft(remaining());
-    setReady(true);
-    const t = setInterval(() => setLeft(remaining()), 1000);
-    return () => clearInterval(t);
-  }, []);
+  const cells: [string, string][] =
+    secs === null
+      ? [
+          ["", "روز"],
+          ["", "ساعت"],
+          ["", "دقیقه"],
+          ["", "ثانیه"],
+        ]
+      : [
+          [toFa(Math.floor(secs / 86_400)), "روز"],
+          [toFa(pad2(Math.floor(secs / 3_600) % 24)), "ساعت"],
+          [toFa(pad2(Math.floor(secs / 60) % 60)), "دقیقه"],
+          [toFa(pad2(secs % 60)), "ثانیه"],
+        ];
 
-  if (!ready) return <div className="h-28" aria-hidden />;
-
-  if (!left)
+  if (secs === 0)
     return (
-      <p className="py-10 text-center text-lg text-candle">
+      <p className="nastaliq mt-8 text-center text-[26px] text-[#F6F3E7]">
         امروز روز ماست
       </p>
     );
 
-  const cells = [
-    { v: toFa(left.d), l: "روز" },
-    { v: toFa(pad2(left.h)), l: "ساعت" },
-    { v: toFa(pad2(left.m)), l: "دقیقه" },
-    { v: toFa(pad2(left.s)), l: "ثانیه" },
-  ];
-
   return (
-    <div className="flex items-start justify-center gap-6 py-10 sm:gap-10">
-      {cells.map((c) => (
-        <div key={c.l} className="flex flex-col items-center gap-1">
-          <span className="tabular text-3xl font-medium text-candle sm:text-4xl">
-            {c.v}
+    /* dir="ltr" so the units run day → hour → minute → second from the left,
+       the way a clock is read. In the page's RTL flow they would otherwise
+       come out reversed, with the seconds on the left. */
+    <div
+      dir="ltr"
+      className="mt-8 flex justify-center"
+      aria-label="زمان باقی‌مانده تا مراسم"
+    >
+      {cells.map(([v, l], i) => (
+        <div
+          key={l}
+          className={`flex-1 text-center ${
+            i === 0 ? "" : "border-l border-gold-lite/30"
+          }`}
+        >
+          {/* the empty first paint reserves the exact height the digits need */}
+          <span className="tabular block text-[23px] text-[#F6F3E7]">
+            {v || " "}
           </span>
-          <span className="text-xs text-mist/45">{c.l}</span>
+          <small className="-mt-0.5 block text-[10px] tracking-[0.22em] text-gold-lite">
+            {l}
+          </small>
         </div>
       ))}
     </div>

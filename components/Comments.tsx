@@ -56,7 +56,7 @@ export default function Comments({
     <div className="mt-3">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="text-xs text-mist/40 hover:text-mist/70"
+        className="text-xs text-muted transition hover:text-gold-ink"
       >
         {comments.length > 0
           ? `${toFa(comments.length)} نظر`
@@ -73,19 +73,24 @@ export default function Comments({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="mt-3 flex flex-col gap-3 border-t border-mist/8 pt-3">
+            <div className="mt-3 flex flex-col gap-3 border-t border-gold-pale pt-3">
               {comments.map((c) => (
                 <div key={c.id} className="text-sm">
-                  <span className="text-candle/70">{c.author}</span>
-                  <span className="mx-2 text-xs text-mist/25">
+                  <span className="text-gold-ink">{c.author}</span>
+                  <time
+                    dateTime={c.created_at}
+                    className="mx-2 text-xs text-muted/70"
+                  >
                     {agoFa(c.created_at)}
-                  </span>
+                  </time>
                   {c.sticker ? (
                     <div className="mt-1">
                       <Sticker id={c.sticker} size={56} />
                     </div>
                   ) : (
-                    <p className="mt-1 leading-6 text-mist/75">{c.body}</p>
+                    <p className="mt-1 whitespace-pre-wrap leading-6 text-ink">
+                      {c.body}
+                    </p>
                   )}
                 </div>
               ))}
@@ -96,10 +101,11 @@ export default function Comments({
                     <button
                       onClick={() => setPicker((p) => !p)}
                       aria-label="استیکر"
-                      className={`rounded-xl px-3 text-sm ring-1 transition ${
+                      aria-expanded={picker}
+                      className={`rounded-xl border px-3 text-sm transition ${
                         picker
-                          ? "bg-candle/20 ring-candle/40"
-                          : "bg-mist/5 ring-mist/10"
+                          ? "border-olive/45 bg-olive/12"
+                          : "border-gold-pale bg-sunk/40"
                       }`}
                     >
                       <Sticker id="heart" size={18} />
@@ -110,12 +116,14 @@ export default function Comments({
                       onKeyDown={(e) => e.key === "Enter" && send()}
                       maxLength={300}
                       placeholder="نظرت..."
-                      className="flex-1 rounded-xl bg-night/50 px-3 py-2 text-sm ring-1 ring-mist/10 outline-none placeholder:text-mist/25 focus:ring-candle/40"
+                      aria-label="نوشتن نظر"
+                      className="min-w-0 flex-1 rounded-xl border border-gold-pale bg-sunk/40 px-3 py-2 text-sm outline-none placeholder:text-muted/60 focus:border-olive"
                     />
                     <button
                       disabled={busy || !text.trim()}
                       onClick={() => send()}
-                      className="rounded-xl bg-candle/15 px-4 text-sm text-candle ring-1 ring-candle/25 disabled:opacity-40"
+                      aria-label="ارسال نظر"
+                      className="rounded-xl border border-gold-pale px-4 text-sm text-gold-ink transition hover:bg-sunk disabled:opacity-40"
                     >
                       ↵
                     </button>
@@ -124,7 +132,9 @@ export default function Comments({
                   <StickerPicker open={picker} onPick={(id) => send(id)} />
 
                   {err && (
-                    <p className="mt-2 text-xs text-pomegranate">{err}</p>
+                    <p role="status" className="mt-2 text-xs text-crimson">
+                      {err}
+                    </p>
                   )}
                 </div>
               )}

@@ -9,3 +9,12 @@ export function normalizePhone(raw: string): string {
   if (s.startsWith("0")) s = s.slice(1);
   return "0" + s;
 }
+
+/**
+ * Iranian mobile numbers are 09 followed by nine digits. Used to keep the
+ * "lost my link" button disabled until there is something worth sending —
+ * the server re-checks anyway.
+ */
+export function isMobile(raw: string): boolean {
+  return /^09\d{9}$/.test(normalizePhone(raw));
+}
