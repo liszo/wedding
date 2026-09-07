@@ -3,66 +3,44 @@
 @import "@fontsource/gulzar/arabic-400.css";
 
 /* ---------------------------------------------------------------------------
-   Botanical direction — ivory paper, deep olive, antique gold.
+   Nude. White, sand, warm umber — nothing else.
 
-   The page is a stack of alternating PAPER and OLIVE bands. They never meet on
-   a straight line: a band either swells over the one above it (.dome) or the
-   band above hangs a lace edge into it (.scallop), and a floral cutout usually
-   straddles the join (.seam). That is the whole section-division system.
+   There are no decorative images anywhere in this direction: every rule,
+   frame, mark and divider below is drawn in CSS. The ornament library still
+   lives in design/ but nothing from it is served.
 
-   Gold has three weights on purpose:
-     --gold      #A8935C  the exact tint baked into the ornament PNGs.
-                          Ornaments and hairlines ONLY — 2.7:1 on paper.
-     --gold-deep #8A7742  3.9:1 — large display type on paper only.
-     --gold-ink  #6E5D30  5.8:1 — any gold text below ~24px on paper.
-   On the olive bands it inverts: --gold-lite is the readable one, and the
-   ornaments get brightness(1.32) to lift off the dark ground.
+   Contrast, against both grounds (--white and --nude):
+     --ink    13.8 / 12.3    headings
+     --umber   9.5 /  8.5    body
+     --muted   5.3 /  4.7    secondary  (AA at any size)
+     --line, --taupe are hairlines and marks — never text.
 --------------------------------------------------------------------------- */
 :root {
-  --paper: #f3eee2;
-  --paper-lite: #faf7ef;
-  --paper-sunk: #e8e1cf;
+  --white: #fdfbf9;
+  --nude: #f4ede7;
+  --nude-deep: #ebe1d8;
 
-  --olive: #495838;
-  --olive-deep: #39452c;
-  --olive-ink: #212819;
+  --ink: #2e2a26;
+  --umber: #4a423c;
+  --muted: #74675b;
 
-  --gold: #a8935c;
-  --gold-deep: #8a7742;
-  --gold-ink: #6e5d30;
-  /* gold-lite is the readable gold ON OLIVE — 4.7:1. The prototype's #C9B689
-     was 3.9:1, which fails AA at the 10px the eyebrows are set in. */
-  --gold-lite: #d8c89f;
-  --gold-pale: #e0d5b8;
+  --taupe: #c9b8ac;
+  --line: #e2d8ce;
 
-  --ink: #2b3025;
-  --muted: #6d7360;
-  --on-olive: #ede8d6;
-  /* secondary text on olive — 4.7:1 */
-  --on-olive-soft: #cfcbb6;
-
-  --crimson: #7c2233;
+  --crimson: #8c4a4a;
 }
 
 @theme inline {
-  --color-paper: var(--paper);
-  --color-paper-lite: var(--paper-lite);
-  --color-sunk: var(--paper-sunk);
-
-  --color-olive: var(--olive);
-  --color-olive-deep: var(--olive-deep);
-  --color-olive-ink: var(--olive-ink);
-
-  --color-gold: var(--gold);
-  --color-gold-deep: var(--gold-deep);
-  --color-gold-ink: var(--gold-ink);
-  --color-gold-lite: var(--gold-lite);
-  --color-gold-pale: var(--gold-pale);
+  --color-white: var(--white);
+  --color-nude: var(--nude);
+  --color-sunk: var(--nude-deep);
 
   --color-ink: var(--ink);
+  --color-umber: var(--umber);
   --color-muted: var(--muted);
-  --color-on-olive: var(--on-olive);
-  --color-on-olive-soft: var(--on-olive-soft);
+
+  --color-taupe: var(--taupe);
+  --color-line: var(--line);
   --color-crimson: var(--crimson);
 
   --font-sans: "Vazirmatn Variable", system-ui, sans-serif;
@@ -70,13 +48,13 @@
 }
 
 html {
-  /* the ground behind the phone-width frame on a wide screen */
-  background: #c9c1ae;
+  /* the ground the card floats on */
+  background: #e6ded6;
   scroll-behavior: smooth;
 }
 
 body {
-  color: var(--ink);
+  color: var(--umber);
   font-family: var(--font-sans);
   font-weight: 300;
   line-height: 1.95;
@@ -86,129 +64,83 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--gold) 35%, transparent);
+  background: color-mix(in srgb, var(--taupe) 45%, transparent);
   color: var(--ink);
 }
 
 :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 1.5px solid var(--umber);
   outline-offset: 3px;
   border-radius: 3px;
 }
 
-/* --- the frame ----------------------------------------------------------- */
+/* --- the card ------------------------------------------------------------ */
 
-/* The invitation is a single 430px column. On anything wider it lifts off the
-   ground as a card rather than stretching — a printed invitation has edges. */
+/* The whole invitation is one 430px card. On anything wider it lifts off the
+   ground rather than stretching — a printed invitation has edges. */
 .frame {
   position: relative;
   max-width: 430px;
   margin: 0 auto;
-  background: var(--paper);
+  background: var(--white);
   overflow: hidden;
 }
 @media (min-width: 520px) {
   .frame {
-    margin-block: 26px;
-    box-shadow: 0 30px 80px -26px rgba(33, 40, 25, 0.45);
+    margin-block: 30px;
+    box-shadow: 0 40px 90px -40px rgba(46, 42, 38, 0.3);
   }
 }
 
-/* Paper grain. paper-seamless.jpg is the only tileable texture in the library
-   (design/ASSETS.md rule 4). Multiply, not overlay — overlay lifts it to white. */
+/* A whisper of paper. Any more and it stops reading as minimal. */
 .grain::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: url("/design/texture/paper-seamless.jpg") repeat 0 0 / 170px 170px;
+  background: url("/design/texture/paper-seamless.jpg") repeat 0 0 / 190px 190px;
   mix-blend-mode: multiply;
-  opacity: 0.5;
+  opacity: 0.22;
   pointer-events: none;
-  border-radius: inherit;
+}
+
+/* Everything below the photograph sits inside a ruled border inset from the
+   card edge — the engraved rule a printed invitation carries. It runs the
+   whole length as one continuous rectangle, over the band colour changes, so
+   the page reads as one card rather than a stack of sections. */
+.card-body {
+  position: relative;
+}
+.card-body::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  z-index: 4;
+  border: 1px solid var(--line);
+  pointer-events: none;
 }
 
 /* --- bands --------------------------------------------------------------- */
 
+/* Wide margins are most of what makes this feel printed: the content column
+   is far narrower than the card it sits on. */
 .band {
   position: relative;
-  padding: 60px 26px;
+  padding: 74px 34px;
 }
-/* Content needs a stacking context to clear the grain overlay (z-index 1).
-   Positioning it is the only way to make z-index apply. */
 .band > * {
   position: relative;
   z-index: 2;
 }
-
-/* ...but that would also flatten any deliberately-absolute child back into the
-   flow. Higher specificity, so `absolute` and `fixed` utilities still win. */
 .band > .absolute {
   position: absolute;
 }
-.band > .fixed {
-  position: fixed;
-}
 
-/* A band that a .dome overlaps loses its bottom 78px at the centre of the
-   curve. Anything full-width down there — the countdown row, the last
-   programme line — needs to clear the crest or it gets swallowed. */
-.pre-dome {
-  padding-bottom: 120px;
+.band-white {
+  background: var(--white);
 }
-
-.band-paper {
-  background: var(--paper);
-}
-.band-olive {
-  background: var(--olive);
-  color: var(--on-olive);
-}
-
-/* Dome — the band swells upward over the one above it. The negative margin is
-   what makes the crest overlap rather than sit in a gap. */
-.dome {
-  border-radius: 50% 50% 0 0 / 78px 78px 0 0;
-  margin-top: -78px;
-  padding-top: 104px;
-  z-index: 3;
-}
-.dome-sm {
-  border-radius: 50% 50% 0 0 / 52px 52px 0 0;
-  margin-top: -52px;
-  padding-top: 82px;
-  z-index: 3;
-}
-/* a gold hairline that follows the curve */
-.dome::after,
-.dome-sm::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  border-top: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
-  border-radius: inherit;
-}
-
-/* A floral cutout that straddles a seam — half on one band, half on the next.
-   That overlap is what makes the transition read as intentional. */
-.seam {
-  position: absolute;
-  z-index: 6;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* A card on paper — the wall, the admin tiles, the music button. The bands
-   and their shaped seams carry the invitation itself; this is for the
-   utility surfaces behind it. */
-.leaf {
-  background: var(--paper-lite);
-  border: 1px solid var(--gold-pale);
-  box-shadow:
-    0 1px 2px rgba(43, 48, 37, 0.04),
-    0 12px 28px -18px rgba(43, 48, 37, 0.3);
+.band-nude {
+  background: var(--nude);
 }
 
 /* --- type ---------------------------------------------------------------- */
@@ -217,18 +149,17 @@ body {
 .nastaliq {
   font-family: var(--font-display);
   font-weight: 400;
-  line-height: 2.15;
+  line-height: 2.1;
   padding-block: 0.12em;
 }
 
-.eyebrow {
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.36em;
-  color: var(--gold-ink);
-}
-.band-olive .eyebrow {
-  color: var(--gold-lite);
+/* The one repeating device: a tiny, widely-tracked label above a title. */
+.label {
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em; /* tracking is trailing-side; recentre the run */
+  color: var(--muted);
 }
 
 .tabular {
@@ -236,32 +167,96 @@ body {
   font-feature-settings: "tnum";
 }
 
-/* Gold line art is pre-tinted #A8935C for paper. On the dark bands it needs
-   lifting — this is the one filter design/ASSETS.md permits (rule 2). */
-.band-olive .lift,
-.lift-always {
-  filter: brightness(1.32);
+/* A plain card, for the utility surfaces — the wall, admin, the modals. The
+   invitation itself uses no cards at all; whitespace does that work there. */
+.leaf {
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+
+/* --- marks --------------------------------------------------------------- */
+
+/* A short hairline, centred. Used instead of every gold divider. */
+.rule {
+  width: 46px;
+  height: 1px;
+  margin-inline: auto;
+  background: var(--taupe);
+}
+
+/* Same, but fading out at both ends — under a section title. */
+.rule-soft {
+  width: 120px;
+  height: 1px;
+  margin-inline: auto;
+  background: linear-gradient(
+    to left,
+    transparent,
+    var(--taupe) 30%,
+    var(--taupe) 70%,
+    transparent
+  );
+}
+
+/* The seam between two bands: a hairline broken in the middle by a small
+   outlined diamond. The break is what lets it work on any pair of grounds —
+   an unbroken line through a filled diamond would need the diamond to know
+   which band it is sitting on. */
+.seam {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-inline: 46px;
+}
+.seam::before,
+.seam::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to left,
+    transparent,
+    var(--taupe) 55%,
+    var(--taupe)
+  );
+}
+.seam::after {
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--taupe) 55%,
+    var(--taupe)
+  );
+}
+.seam i {
+  display: block;
+  width: 6px;
+  height: 6px;
+  rotate: 45deg;
+  border: 1px solid var(--taupe);
 }
 
 /* --- the gate ------------------------------------------------------------
-   A sealed envelope that opens once. The choreography, in order:
-     0.38s  the flap swings back on the X axis
+   A sealed envelope, drawn entirely in CSS. The choreography:
+     0.38s  the flap swings back
      1.05s  the card slides up out of the pocket
-     1.85s  the paper parts fade
-     2.00s  the whole scene blooms past the viewport
-   The component only toggles .go and .open; every timing lives here.
+     1.85s  the paper fades
+     2.00s  the scene blooms past the viewport
+   The component only toggles .go and .open.
 -------------------------------------------------------------------------- */
 
 .gate {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: var(--paper);
+  background: var(--nude);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 30px;
+  padding: 32px;
   overflow: hidden;
   transition:
     opacity 1.1s ease,
@@ -271,36 +266,13 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: url("/design/texture/paper-seamless.jpg") repeat 0 0 / 170px 170px;
+  background: url("/design/texture/paper-seamless.jpg") repeat 0 0 / 190px 190px;
   mix-blend-mode: multiply;
-  opacity: 0.5;
-}
-.gate::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at 50% 45%,
-    rgba(255, 255, 255, 0.36) 0%,
-    rgba(212, 203, 182, 0.24) 66%,
-    rgba(166, 153, 126, 0.42) 100%
-  );
+  opacity: 0.22;
 }
 .gate.open {
   opacity: 0;
   visibility: hidden;
-}
-
-/* corner florals */
-.g-fl {
-  position: absolute;
-  pointer-events: none;
-  z-index: 2;
-  transition: opacity 0.8s 1.8s;
-}
-.gate.go .g-fl {
-  opacity: 0;
 }
 
 .g-head,
@@ -310,11 +282,11 @@ body {
   text-align: center;
 }
 .g-head {
-  margin-bottom: 30px;
+  margin-bottom: 34px;
   transition: opacity 0.7s 1.7s;
 }
 .g-foot {
-  margin-top: 38px;
+  margin-top: 40px;
   transition: opacity 0.5s;
 }
 .gate.go .g-head,
@@ -326,8 +298,8 @@ body {
   position: relative;
   z-index: 3;
   perspective: 1100px;
-  width: 290px;
-  height: 198px;
+  width: 276px;
+  height: 188px;
 }
 .env {
   position: relative;
@@ -341,53 +313,46 @@ body {
   cursor: pointer;
 }
 .env:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 14px;
+  outline: 1.5px solid var(--umber);
+  outline-offset: 16px;
 }
 
 .e-back {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: #efe9da;
-  border: 1px solid var(--gold-pale);
-  box-shadow: 0 20px 46px -16px rgba(70, 64, 44, 0.4);
+  background: var(--white);
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 50px -20px rgba(46, 42, 38, 0.28);
 }
 .e-card {
   position: absolute;
-  inset-inline-start: 11px;
-  top: 12px;
+  inset-inline-start: 10px;
+  top: 11px;
   z-index: 2;
-  width: 268px;
-  height: 174px;
-  background: var(--paper-lite);
-  border: 1px solid var(--gold-pale);
-  box-shadow: 0 4px 14px rgba(90, 82, 58, 0.16);
+  width: 256px;
+  height: 166px;
+  background: var(--white);
+  border: 1px solid var(--line);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   transition: transform 1.05s 1.05s cubic-bezier(0.32, 0, 0.2, 1);
 }
-.e-card::before {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  border: 1px solid rgba(168, 147, 92, 0.34);
-}
 .gate.go .e-card {
-  transform: translateY(-178px);
+  transform: translateY(-172px);
 }
 
 .e-front {
   position: absolute;
   inset: 0;
   z-index: 4;
-  background: #f1ebdd;
-  border: 1px solid var(--gold-pale);
-  /* The pocket: a full rectangle with a V notched out of the top. The notch
-     bottoms out at 58% (115px) and the flap reaches 124px, so the two overlap
-     and the card inside is never visible through the mouth. */
+  background: var(--white);
+  border: 1px solid var(--line);
+  /* a full rectangle with a V notched out of the top; the notch bottoms at
+     58% and the flap reaches 62%, so the card is never visible through it */
   clip-path: polygon(0% 0%, 50% 58%, 100% 0%, 100% 100%, 0% 100%);
   transition: opacity 0.5s 1.85s;
 }
@@ -397,14 +362,11 @@ body {
   top: 0;
   z-index: 6;
   width: 100%;
-  height: 124px;
-  background: #eae3d0;
-  border: 1px solid var(--gold-pale);
+  height: 118px;
+  background: var(--nude-deep);
+  border: 1px solid var(--line);
   clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
   transform-origin: top center;
-  display: flex;
-  justify-content: center;
-  padding-top: 14px;
 }
 .gate.go .e-flap {
   animation: flapOpen 0.95s 0.38s cubic-bezier(0.55, 0, 0.15, 1) forwards;
@@ -425,34 +387,41 @@ body {
   }
 }
 
-.seal-wax {
+/* The seal: real wax, toned to the palette at build time. */
+.seal-mark {
   position: absolute;
   inset-inline-start: 50%;
-  top: 96px;
+  top: 104px;
   z-index: 7;
-  width: 78px;
+  display: block;
+  width: 62px;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(59, 48, 42, 0.32));
   transition:
     transform 0.62s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.55s;
 }
+.seal-mark img {
+  display: block;
+  width: 100%;
+}
 /* the start-50% offset flips sign under RTL */
-[dir="rtl"] .seal-wax {
+[dir="rtl"] .seal-mark {
   transform: translate(50%, -50%);
 }
-.env:hover .seal-wax {
+.env:hover .seal-mark {
   transform: translate(-50%, -50%) scale(1.06);
 }
-[dir="rtl"] .env:hover .seal-wax {
+[dir="rtl"] .env:hover .seal-mark {
   transform: translate(50%, -50%) scale(1.06);
 }
-.gate.go .seal-wax {
-  transform: translate(-50%, -190%) rotate(-19deg) scale(1.12);
+.gate.go .seal-mark {
+  transform: translate(-50%, -190%) rotate(-14deg) scale(1.1);
   opacity: 0;
 }
-[dir="rtl"] .gate.go .seal-wax {
-  transform: translate(50%, -190%) rotate(-19deg) scale(1.12);
+[dir="rtl"] .gate.go .seal-mark {
+  transform: translate(50%, -190%) rotate(-14deg) scale(1.1);
   opacity: 0;
 }
 
@@ -471,18 +440,55 @@ body {
   }
 }
 
-/* Reduced motion: no flap, no bloom — the gate just fades out. */
-@media (prefers-reduced-motion: reduce) {
-  .gate.go .e-card,
-  .gate.go .seal-wax {
-    transform: none;
+/* --- the unfinished chapter ---------------------------------------------- */
+
+/* The wedding has not happened, so its chapter never finishes loading. The
+   bar fills and resets forever; the dots never resolve. */
+.loading-bar {
+  position: relative;
+  width: 132px;
+  height: 1px;
+  margin-inline: auto;
+  overflow: hidden;
+  background: var(--line);
+}
+.loading-bar::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 40%;
+  background: var(--umber);
+  animation: crawl 2.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+@keyframes crawl {
+  0% {
+    transform: translateX(-110%);
   }
-  .gate.go .scene {
-    animation: none;
+  100% {
+    transform: translateX(360%);
   }
 }
 
-/* --- scroll reveal ------------------------------------------------------- */
+.loading-dots span {
+  animation: blink 1.6s infinite;
+}
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.25s;
+}
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.5s;
+}
+@keyframes blink {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+  }
+  30% {
+    opacity: 1;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -495,5 +501,19 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .loading-bar::after {
+    transform: none;
+    width: 45%;
+  }
+  .loading-dots span {
+    opacity: 1;
+  }
+  .gate.go .e-card,
+  .gate.go .seal-mark {
+    transform: none;
+  }
+  .gate.go .scene {
+    animation: none;
   }
 }

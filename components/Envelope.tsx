@@ -3,7 +3,6 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "motion/react";
 import { wedding, coupleNames } from "@/content/config";
 import * as music from "@/lib/music";
-import { ORNAMENT, FLORAL } from "./ui";
 
 const SEEN = "wg-envelope-opened";
 
@@ -33,32 +32,6 @@ function isOpened(): boolean {
 function openedOnServer() {
   return true;
 }
-
-/** Corner florals. Logical insets so the arrangement mirrors correctly in RTL. */
-const CORNERS: (React.CSSProperties & { src: string })[] = [
-  { src: FLORAL.corner, width: 150, top: -6, insetInlineStart: -18 },
-  {
-    src: FLORAL.eucalyptus,
-    width: 172,
-    top: -24,
-    insetInlineEnd: -40,
-    transform: "rotate(8deg)",
-  },
-  {
-    src: FLORAL.peony,
-    width: 150,
-    bottom: -24,
-    insetInlineStart: -32,
-    transform: "rotate(188deg)",
-  },
-  {
-    src: FLORAL.corner,
-    width: 150,
-    bottom: -6,
-    insetInlineEnd: -18,
-    transform: "rotate(180deg)",
-  },
-];
 
 /**
  * The sealed invitation. Renders above the page, never instead of it — the
@@ -124,29 +97,12 @@ export default function Envelope({ guestName }: { guestName?: string }) {
         if (e.key === "Escape") unseal();
       }}
     >
-      {/* four florals crowding in from the corners; they fade before the bloom */}
-      {CORNERS.map((c, i) => (
-        <img
-          key={i}
-          className="g-fl"
-          style={c}
-          src={c.src}
-          alt=""
-          aria-hidden
-        />
-      ))}
-
       <div className="g-head">
-        <div className="eyebrow">
-          {guestName ? `${guestName} عزیز` : "دعوت‌نامه‌ی شما"}
-        </div>
-        <div className="nastaliq text-[36px] text-olive-ink">{coupleNames}</div>
-        <img
-          src={ORNAMENT.ruleBraid}
-          alt=""
-          aria-hidden
-          className="mx-auto w-[170px] opacity-80"
-        />
+        {guestName && <p className="label mb-4">{guestName} عزیز</p>}
+        <p className="text-[12.5px] leading-[2] text-muted">
+          شما دعوت شدید به مراسم عروسی
+        </p>
+        <p className="nastaliq mt-1 text-[32px] text-ink">{coupleNames}</p>
       </div>
 
       <div className="scene">
@@ -158,44 +114,28 @@ export default function Envelope({ guestName }: { guestName?: string }) {
         >
           <span className="e-back" />
           <span className="e-card">
-            <img
-              src={ORNAMENT.ampersand}
-              alt=""
-              aria-hidden
-              className="w-[88px] opacity-90"
-            />
-            <span className="nastaliq text-[25px] text-olive-ink">
-              {coupleNames}
-            </span>
-            <span className="text-[10.5px] tracking-[0.22em] text-gold-ink">
+            <span className="nastaliq text-[23px] text-ink">{coupleNames}</span>
+            <span className="text-[10px] tracking-[0.28em] text-muted">
               {wedding.dateFa}
             </span>
           </span>
           <span className="e-front" />
-          <span className="e-flap">
+          <span className="e-flap" />
+          <span className="seal-mark">
             <img
-              src={ORNAMENT.ruleThin}
+              src="/design/seals/wax-heart.webp"
               alt=""
               aria-hidden
-              className="h-fit w-24 opacity-40"
-            />
-          </span>
-          <span className="seal-wax">
-            <img
-              src="/design/seals/wax-seal-olive-heart.webp"
-              alt=""
-              aria-hidden
-              width={78}
-              height={78}
-              className="block w-full drop-shadow-[0_6px_14px_rgba(58,66,44,.4)]"
+              width={62}
+              height={63}
             />
           </span>
         </button>
       </div>
 
-      <div className="g-foot text-[12.5px] tracking-[0.09em] text-muted">
-        برای گشودن، مُهر را لمس کنید
-      </div>
+      <p className="g-foot text-[11.5px] tracking-[0.16em] text-muted">
+        برای گشودن، لمس کنید
+      </p>
     </div>
   );
 }

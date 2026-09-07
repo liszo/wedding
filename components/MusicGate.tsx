@@ -2,7 +2,6 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { choose, getChoice, getServerChoice, subscribe } from "@/lib/music";
-import { ORNAMENT, FLORAL } from "./ui";
 
 /**
  * The first thing a guest sees, before the sealed envelope. Asking up front is
@@ -40,78 +39,48 @@ export default function MusicGate() {
           onKeyDown={(e) => {
             if (e.key === "Escape") choose("no");
           }}
-          className="fixed inset-0 z-110 flex items-center justify-center bg-paper px-7"
+          className="fixed inset-0 z-110 flex items-center justify-center bg-nude px-8"
         >
           {/* the page grain does not reach a fixed overlay — repaint it */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-50 mix-blend-multiply"
+            className="pointer-events-none absolute inset-0 opacity-[0.22] mix-blend-multiply"
             style={{
               background:
-                "url('/design/texture/paper-seamless.jpg') repeat 0 0 / 170px 170px",
-            }}
-          />
-          <img
-            src={FLORAL.eucalyptus}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute w-[150px] opacity-70"
-            style={{ top: -22, insetInlineStart: -36, transform: "rotate(6deg)" }}
-          />
-          <img
-            src={FLORAL.peony}
-            alt=""
-            aria-hidden
-            className="pointer-events-none absolute w-[140px] opacity-70"
-            style={{
-              bottom: -18,
-              insetInlineEnd: -30,
-              transform: "rotate(184deg)",
+                "url('/design/texture/paper-seamless.jpg') repeat 0 0 / 190px 190px",
             }}
           />
 
           <motion.div
-            initial={reduce ? false : { opacity: 0, y: 14 }}
+            initial={reduce ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-[320px] rounded-[20px] border border-gold-pale bg-paper-lite/80 px-7 py-9 text-center shadow-[0_20px_50px_-28px_rgba(43,48,37,.55)]"
+            className="relative w-full max-w-[300px] text-center"
           >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-[7px] rounded-[14px] border border-gold/25"
-            />
-
-            <img
-              src={ORNAMENT.crown}
-              alt=""
-              aria-hidden
-              className="mx-auto mb-2 w-[76px] opacity-90"
-            />
-
-            <h2
-              id="music-gate-h"
-              className="nastaliq text-[23px] text-olive-ink"
-            >
+            <p className="label">پیش از شروع</p>
+            <h2 id="music-gate-h" className="nastaliq mt-1 text-[24px] text-ink">
               با موسیقی؟
             </h2>
-            <p className="mx-auto mt-1 mb-7 max-w-[220px] text-[12.5px] leading-[1.9] text-muted">
+            <div aria-hidden className="rule mt-3 mb-6" />
+
+            <p className="mx-auto mb-8 max-w-[230px] text-[12.5px] leading-[2] text-muted">
               یک قطعه‌ی آرام همراه دعوت‌نامه پخش می‌شود. هر وقت خواستی می‌توانی
               خاموشش کنی.
             </p>
 
-            <div className="flex gap-2.5">
+            <div className="flex flex-col gap-2.5">
               <button
                 ref={yesBtn}
                 onClick={() => choose("yes")}
-                className="flex-1 rounded-xl border border-olive bg-olive py-3 text-[12.5px] text-paper transition hover:bg-olive-deep"
+                className="rounded-full bg-umber py-3.5 text-[12.5px] tracking-[0.06em] text-white transition hover:bg-ink"
               >
                 بله، پخش کن
               </button>
               <button
                 onClick={() => choose("no")}
-                className="flex-1 rounded-xl border border-gold-pale py-3 text-[12.5px] text-muted transition hover:bg-sunk/60"
+                className="rounded-full border border-taupe py-3.5 text-[12.5px] tracking-[0.06em] text-umber transition hover:bg-sunk"
               >
-                بی‌صدا
+                بی‌صدا ادامه بده
               </button>
             </div>
           </motion.div>

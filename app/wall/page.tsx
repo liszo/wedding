@@ -6,7 +6,6 @@ import { listPosts } from "@/lib/posts";
 import Composer from "@/components/Composer";
 import PostCard from "@/components/PostCard";
 import LostLinkModal from "@/components/LostLinkModal";
-import { ORNAMENT } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -20,23 +19,13 @@ export default async function Wall() {
 
   return (
     <main className="frame grain min-h-dvh px-5 py-9">
-      <header className="relative z-2 mb-7 text-center">
-        <img
-          src={ORNAMENT.crown}
-          alt=""
-          aria-hidden
-          className="mx-auto w-[92px] opacity-90"
-        />
-        <h1 className="nastaliq text-[28px] text-olive-ink">دیوار ما</h1>
-        <img
-          src={ORNAMENT.ruleThin}
-          alt=""
-          aria-hidden
-          className="mx-auto mt-1 w-[150px] opacity-85"
-        />
+      <header className="relative z-2 mb-8 text-center">
+        <p className="label">برای شقایق و رامین</p>
+        <h1 className="nastaliq mt-1 text-[26px] text-ink">دیوار ما</h1>
+        <div aria-hidden className="rule-soft mt-3" />
         <Link
           href="/"
-          className="mt-3 inline-block text-xs text-muted underline underline-offset-4 transition hover:text-gold-ink"
+          className="mt-3 inline-block text-xs text-muted underline underline-offset-4 transition hover:text-umber"
         >
           بازگشت به دعوت‌نامه
         </Link>
@@ -71,12 +60,7 @@ export default async function Wall() {
           )}
         </div>
 
-        <img
-          src={ORNAMENT.ruleBraid}
-          alt=""
-          aria-hidden
-          className="mx-auto mt-12 w-[180px] opacity-70"
-        />
+        <div aria-hidden className="rule mt-12" />
       </div>
     </main>
   );

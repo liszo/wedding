@@ -19,7 +19,13 @@ export function googleCalendarUrl(): string {
   return `https://calendar.google.com/calendar/render?${p.toString()}`;
 }
 
+/**
+ * Prefer the saved-place link. `/maps/@lat,lng,zoom` only points the camera at
+ * a spot — it renders no marker, so a guest arrives at an unlabelled patch of
+ * map. `places/<id>` (and its nshn.ir short form) is what drops the pin.
+ */
 export function neshanUrl(): string {
+  if (wedding.venue.neshan) return wedding.venue.neshan;
   const { lat, lng } = wedding.venue;
   return `https://neshan.org/maps/@${lat},${lng},16.0z`;
 }

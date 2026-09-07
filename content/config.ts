@@ -22,10 +22,17 @@ export const wedding = {
     name: "باغ تالار پردیسان",
     address:
       "پردیس، جاده باغ کمش، بعد از پل خلیج فارس، ۵۰۰ متر داخل جاده، پلاک ۱۰۰",
-    // TODO: these coordinates are the old ones — drop a pin on the real garden
-    // and update, the map buttons and the .ics both read from here.
-    lat: 35.73288835205472,
-    lng: 51.79208425311717,
+
+    /**
+     * Neshan's own short link for the saved place. A `/maps/@lat,lng,zoom`
+     * URL only centres the camera — it drops no pin. Only a `places/<id>`
+     * link (and its nshn.ir short form) actually marks the spot.
+     */
+    neshan: "https://nshn.ir/_bv_CNPx3pie",
+
+    // from the place link's own camera hash: #c35.733-51.797-15z
+    lat: 35.733,
+    lng: 51.797,
   },
 
   /** The two ceremonies already behind us. */
@@ -34,13 +41,16 @@ export const wedding = {
     engagementFa: "۱۳ شهریور ۱۴۰۵",
   },
 
-  /** Running order. `icon` keys into content/programme icons — see Programme.tsx. */
+  /** Running order. */
   programme: [
-    { at: "۱۹:۰۰", title: "ورود مهمان‌ها", note: "پذیرایی در باغ", icon: "flower" },
-    { at: "۲۰:۰۰", title: "مراسم عقد", note: "لطفاً سر ساعت", icon: "rings" },
-    { at: "۲۱:۳۰", title: "شام", note: "", icon: "rose" },
-    { at: "۲۲:۳۰", title: "موسیقی و رقص", note: "", icon: "champagne" },
-    { at: "۲۴:۰۰", title: "بدرقه", note: "", icon: "heart" },
+    { at: "۱۸:۰۰", title: "مراسم عقد آریایی", note: "" },
+    {
+      at: "۱۹:۳۰",
+      title: "ورود مهمان‌ها و پذیرایی",
+      note: "همراه موسیقی و رقص",
+    },
+    { at: "۲۲:۰۰", title: "سرو شام", note: "" },
+    { at: "۲۳:۳۰", title: "بدرقه", note: "" },
   ],
 
   uploadCap: 20,

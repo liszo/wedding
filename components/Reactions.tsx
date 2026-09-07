@@ -50,10 +50,8 @@ export default function Reactions({
           disabled={!canReact}
           aria-pressed={r.mine}
           className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${
-            r.mine
-              ? "border-olive/45 bg-olive/12"
-              : "border-gold-pale bg-sunk/40"
-          } ${canReact ? "hover:border-olive/45" : "cursor-default opacity-60"}`}
+            r.mine ? "border-umber bg-sunk" : "border-line bg-transparent"
+          } ${canReact ? "hover:border-umber" : "cursor-default opacity-60"}`}
         >
           <motion.span
             key={`${r.kind}-${r.mine}`}

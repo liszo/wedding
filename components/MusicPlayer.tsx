@@ -78,7 +78,7 @@ export default function MusicPlayer() {
             {[0, 1, 2].map((i) => (
               <motion.span
                 key={i}
-                className="w-[3px] rounded-full bg-gold-deep"
+                className="w-[3px] rounded-full bg-umber"
                 style={reduce ? { height: 10 } : undefined}
                 animate={reduce ? undefined : { height: [6, 15, 8, 13, 6] }}
                 transition={{
@@ -96,7 +96,7 @@ export default function MusicPlayer() {
             height="16"
             viewBox="0 0 15 16"
             aria-hidden
-            className="ms-[2px] fill-gold-deep"
+            className="ms-[2px] fill-umber"
           >
             {/* RTL page, but a play triangle still points the way the audio
                 runs — leave it pointing right */}

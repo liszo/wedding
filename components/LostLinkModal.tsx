@@ -57,7 +57,7 @@ export default function LostLinkModal() {
       <button
         ref={trigger}
         onClick={() => setOpen(true)}
-        className="text-sm text-muted underline underline-offset-4 transition hover:text-gold-ink"
+        className="text-sm text-muted underline underline-offset-4 transition hover:text-umber"
       >
         لینک دعوتت را گم کرده‌ای؟
       </button>
@@ -83,7 +83,7 @@ export default function LostLinkModal() {
               onKeyDown={(e) => e.key === "Escape" && close()}
               className="leaf w-full max-w-sm rounded-t-3xl p-6 text-start sm:rounded-3xl"
             >
-              <h2 id="lost-link-h" className="nastaliq mb-1 text-2xl text-gold-deep">
+              <h2 id="lost-link-h" className="nastaliq mb-1 text-2xl text-ink">
                 شماره‌ات را وارد کن
               </h2>
               <p className="mb-5 text-sm leading-7 text-muted">
@@ -104,14 +104,14 @@ export default function LostLinkModal() {
                 onChange={(e) => setPhone(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && submit()}
                 placeholder="09123456789"
-                className="mb-3 w-full rounded-xl border border-gold-pale bg-sunk/40 px-4 py-3 text-center outline-none placeholder:text-muted/50 focus:border-olive"
+                className="mb-3 w-full rounded-xl border border-line bg-sunk px-4 py-3 text-center outline-none placeholder:text-muted/50 focus:border-umber"
               />
 
               {result && (
                 <p
                   role="status"
                   className={`mb-3 text-sm ${
-                    result.ok ? "text-gold-ink" : "text-crimson"
+                    result.ok ? "text-umber" : "text-crimson"
                   }`}
                 >
                   {result.text}
@@ -122,13 +122,13 @@ export default function LostLinkModal() {
                 <button
                   disabled={busy || !valid}
                   onClick={submit}
-                  className="flex-1 rounded-xl bg-olive py-3 text-sm font-medium text-paper transition hover:bg-olive-deep disabled:opacity-45"
+                  className="flex-1 rounded-xl bg-umber py-3 text-sm font-medium text-white transition hover:bg-ink disabled:opacity-45"
                 >
                   {busy ? "..." : "تأیید"}
                 </button>
                 <button
                   onClick={close}
-                  className="rounded-xl border border-gold-pale px-5 py-3 text-sm text-gold-ink transition hover:bg-sunk"
+                  className="rounded-xl border border-line px-5 py-3 text-sm text-umber transition hover:bg-sunk"
                 >
                   بستن
                 </button>

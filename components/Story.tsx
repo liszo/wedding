@@ -1,89 +1,57 @@
 import { story } from "@/content/story";
-import { SectionHead, Divider, ORNAMENT } from "./ui";
+import { SectionHead } from "./ui";
 import Reveal from "./Reveal";
 
 /**
- * Chapters alternate sides down the page. The photographs are arch-topped —
- * a 69px radius on a 138px-wide frame is a true semicircle — which echoes the
- * dome the section itself sits under.
+ * Three chapters, date and title only. The photographs are plain rectangles —
+ * no arch, no dome, no mask; the crop does the work.
  *
- * The last chapter has no photograph because it has not happened yet; it
- * centres instead, under the poppy arch.
+ * The last chapter has no photograph and no text because it has not happened
+ * yet. It is still loading.
  */
 export default function Story() {
   return (
     <>
-      <SectionHead
-        id="story-h"
-        eyebrow="از آغاز تا امروز"
-        title="قصه‌ی ما"
-        mark={ORNAMENT.crown}
-        className="mt-6"
-      />
+      <SectionHead id="story-h" title="قصه‌ی ما" className="mb-12" />
 
-      {story.map((m, i) => (
-        <div key={m.title}>
-          {i > 0 && <Divider width={180} />}
+      <div className="mx-auto flex max-w-[300px] flex-col gap-14">
+        {story.map((m) => (
+          <Reveal key={m.title}>
+            <div className="text-center">
+              <p className="tabular text-[10px] tracking-[0.3em] text-muted">
+                {m.when}
+              </p>
+              <h3 className="nastaliq mt-0.5 text-[22px] text-ink">
+                {m.title}
+              </h3>
 
-          <Reveal>
-            {/* Below ~360px the side-by-side split leaves two words per line,
-                so the chapter stacks and centres instead. */}
-            {m.photo ? (
-              <div
-                className={`mx-auto flex max-w-[342px] flex-col items-center gap-4 text-center min-[360px]:items-center min-[360px]:gap-[18px] min-[360px]:text-start ${
-                  i % 2 === 1
-                    ? "min-[360px]:flex-row-reverse"
-                    : "min-[360px]:flex-row"
-                }`}
-              >
-                <div className="shrink-0 min-[360px]:basis-[132px]">
-                  <img
-                    src={m.photo.thumb}
-                    width={m.photo.tw}
-                    height={m.photo.th}
-                    alt={m.photo.alt}
-                    loading="lazy"
-                    decoding="async"
-                    className="block h-[180px] w-[132px] rounded-t-[66px] rounded-b-[5px] border border-gold-pale object-cover shadow-[0_12px_26px_-14px_rgba(70,64,44,.55)]"
-                    style={{ filter: "sepia(.06) saturate(.93)" }}
-                  />
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-[10px] tracking-[0.28em] text-gold-ink">
-                    {m.when}
-                  </p>
-                  <h3 className="nastaliq my-px text-[21px] text-olive-ink">
-                    {m.title}
-                  </h3>
-                  <p className="text-[13.5px] leading-[1.95] text-muted">
-                    {m.body}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="mx-auto max-w-[300px] text-center">
+              {m.photo ? (
                 <img
-                  src={ORNAMENT.arch}
-                  alt=""
-                  aria-hidden
+                  src={m.photo.thumb}
+                  srcSet={`${m.photo.thumb} ${m.photo.tw}w, ${m.photo.src} ${m.photo.w}w`}
+                  sizes="(max-width: 26rem) 76vw, 300px"
+                  width={m.photo.tw}
+                  height={m.photo.th}
+                  alt={m.photo.alt}
                   loading="lazy"
-                  className="mx-auto mb-1 w-[120px] opacity-85"
+                  decoding="async"
+                  className="mt-5 block aspect-4/5 w-full rounded-[6px] object-cover"
                 />
-                <p className="text-[10px] tracking-[0.28em] text-gold-ink">
-                  {m.when}
-                </p>
-                <h3 className="nastaliq my-px text-[23px] text-olive-ink">
-                  {m.title}
-                </h3>
-                <p className="text-[13.5px] leading-[1.95] text-muted">
-                  {m.body}
-                </p>
-              </div>
-            )}
+              ) : (
+                <div className="mt-6">
+                  <div className="loading-bar" />
+                  <p className="loading-dots mt-3 text-[12px] tracking-[0.2em] text-muted">
+                    به‌زودی
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                  </p>
+                </div>
+              )}
+            </div>
           </Reveal>
-        </div>
-      ))}
+        ))}
+      </div>
     </>
   );
 }

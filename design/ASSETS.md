@@ -17,20 +17,31 @@ If what you need isn't listed here, say so rather than guessing.**
 npm run assets
 ```
 
-`scripts/prepare-assets.ts` re-encodes the transparent PNGs it needs as WebP at native
-size, crops and compresses every photograph to WebP at two sizes, shrinks the six
-reaction stickers (1MB of PNG → 88KB of WebP), and writes `content/photos.generated.ts`
-so every `<img>` knows its intrinsic size and nothing reflows. Both the sources and the
-generated output are committed — Vercel builds from git.
+> **The site currently serves almost nothing from this folder.**
+>
+> The design went minimal and nude: white, sand, warm umber, and no decorative imagery
+> at all. Every rule, frame, monogram and the envelope itself are drawn in CSS. Of
+> everything catalogued below, only `photos/`, `texture/paper-seamless.jpg` and **two**
+> ornaments are shipped: `divider-braid-heart` (the rule under section headings) and
+> `crown-lily` (the footer mark). Both are re-tinted from gold to the nude palette at
+> build time — their RGB is replaced wholesale while alpha is left untouched, which is
+> correct for art already keyed gold-on-transparent and preserves every soft edge.
+>
+> `florals/`, `ornaments/`, `icons/`, `persian/`, `seals/` and `vector-source/` are kept
+> as a complete archive. They were used by two earlier directions (ivory tazhib, then
+> botanical olive) which are in the git history. Nothing references them at runtime; the
+> catalogue below stands so they are usable again without re-deriving what each file is.
 
-The site settled on the **botanical direction**: ivory paper, deep olive (`#495838`),
-antique gold. That decides what gets copied — `florals/`, `ornaments/`, `icons/`, the
-olive seal, the paper texture. **`persian/` is not served**; see rule 9.
+`scripts/prepare-assets.ts` crops every photograph, maps it through the duotone curve,
+compresses it to WebP at two sizes, shrinks the six reaction stickers (1MB of PNG → 88KB
+of WebP), and writes `content/photos.generated.ts` so every `<img>` knows its intrinsic
+size and nothing reflows. Sources and generated output are both committed — Vercel builds
+from git.
 
-The page is a stack of alternating paper and olive bands that never meet on a straight
-line — a band either swells over the one above (`.dome`) or the band above hangs a lace
-edge into it (`.scallop`), with a floral cutout straddling most joins (`.seam`). The
-vocabulary lives in `components/ui.tsx`; the shapes are in `app/globals.css`.
+**All photographs are duotone**, mapped through one warm three-stop curve:
+`#4A423C` (shadow) → `#C9B8AC` (midtone) → `#FAF7F3` (highlight). A flat `sharp.tint()`
+cannot produce this — it scales toward a single colour and leaves midtones neutral, which
+reads as grey with a cast rather than toned. The midtone stop is where skin sits.
 
 ---
 
@@ -63,32 +74,23 @@ vocabulary lives in `components/ui.tsx`; the shapes are in `app/globals.css`.
 
 ## photos/
 
-Ten photographs across two ceremonies. `story-1.jpg` and `story-2.jpg` are from the
-**خواستگاری** (proposal) — a pink dress, a peach-orange bouquet, a Persian miniature on
-the wall behind; they are already cropped and lightly desaturated. The other eight are
-straight-from-camera exports from the **بله‌برون** (engagement): white lace, a white and
-lapis-blue bouquet, the pearl-draped sofreh. Uncropped, full saturation, 24–736KB each.
+Sources for the invitation. Only the files in the **Ships as** column are rendered;
+everything else is kept because it may be wanted again.
 
-> An earlier revision of this file called story-1 and story-2 an "aghd session". They
-> are the proposal, and the story timeline is built on that reading:
-> خواستگاری → بله‌برون → عروسی.
+| File | Size | Ships as | What it is |
+|---|---|---|---|
+| `new-hero.webp` | 1426×2016 | `hero` | **The hero**, full-bleed and uncropped. Couple centre-right, a phone in the foreground, and empty wall panelling top-left — that corner is where the names sit, so do not crop it away. |
+| `bale-boron.webp` | 1426×2016 | `baleBoron` | The بله‌برون chapter. **Currently byte-identical to `new-hero.webp`** (same md5), so the same frame appears twice on the page. Almost certainly a copy slip — drop the intended photo in under this name and re-run `npm run assets`. |
+| `story-1.jpg` | 860×1150 | `proposal` | The خواستگاری chapter. Couple with the orange-peach bouquet, Persian miniature behind. |
+| `gallery1.jpg` | 600×800 | `gallery1` | Proposal evening — bouquet, Turkish lamps, hallway. |
+| `gallery2.jpg` | 800×633 | `gallery2` | Seated on the sofreh, wide, both faces to camera. |
+| `gallery3.jpg` | 785×800 | `gallery3` | Seated, looking at each other, chandelier overhead. |
+| `gallery4.jpg` | 600×800 | `gallery4` | Standing portrait, candles behind. |
+| `gallery5.jpg` | 800×600 | `gallery5` | The ring, hands sharp, couple soft behind. |
+| `story-5.jpg` | 2560×1920 | `og` | Link-preview image only — a 1.9:1 landscape crop with both faces and the ring. |
+| `hero.jpg`, `story-2/3/4/6/7/8/9.jpg` | various | *(unused)* | The engagement set used by earlier directions. Full descriptions are in the git history of this file. |
 
-| File | Size | Orientation | Ships as | What it is |
-|---|---|---|---|---|
-| `hero.jpg` | 2560×1920 | landscape | `ringDetail` | Engagement ring in sharp focus, couple soft-focused behind holding hands. Detail-led, not face-led — a gallery frame, not the hero. |
-| `story-1.jpg` | 860×1150 | portrait | `proposal` | Proposal. Couple with the orange-peach bouquet, Persian miniature behind. Opens the story timeline. |
-| `story-2.jpg` | 700×700 | square | `proposalSquare` | Same evening, tighter square crop. Gallery. |
-| `story-3.jpg` | 1920×2560 | portrait | `sofreh` | Close-up of the sofreh centrepiece — pearl-draped fabric, crystal, the ring resting on it. Gallery. |
-| `story-4.jpg` | 240×320 | portrait | `candlelit` | Candid close portrait, candlelit. **240×320 source** — ships to the gallery, and the lightbox is capped at intrinsic width so it never blows up soft. |
-| `story-5.jpg` | 2560×1920 | landscape | `ringMoment`, `og` | Both faces clear, hands and ring visible. Two crops: a 4:5 portrait centred on the joined hands for the بله‌برون chapter, and a 1.9:1 landscape for the link-preview image. |
-| `story-6.jpg` | 2560×1920 | landscape | `ringBouquet` | Macro of the ring against the white-and-blue bouquet. Those blue flowers are where `--lapis` comes from. Gallery. |
-| `story-7.jpg` | 2560×1920 | landscape | `venue` | Full-length shot showing the whole staging — chandelier, candelabra, sofreh stands. The only frame with room atmosphere. Gallery. |
-| `story-8.jpg` | 1920×2560 | portrait | `hero`, `heroColour` | **The hero**, full-bleed and **black and white** — a platinum-print treatment baked in at build time (grayscale, a small contrast lift, then the whites tinted back toward the paper), never a CSS filter, so the browser cannot paint the colour version first. Cropped to 1920×2400 so the frame lands on the faces. `heroColour` is the same crop untouched, kept for reuse. |
-| `story-9.jpg` | 600×800 | portrait | *(unused)* | Wide sofreh tableau, screenshot-grade at 600×800. Rendered by the script but kept out of the gallery — too soft next to the rest. |
-
-**Still worth shooting:** nothing here shows the wedding venue (باغ تالار پردیسان), and
-there is no wide portrait of the two of you from the بله‌برون that isn't candlelit. Both
-would slot straight in.
+**Still worth shooting:** nothing here shows the wedding venue (باغ تالار پردیسان).
 
 ---
 

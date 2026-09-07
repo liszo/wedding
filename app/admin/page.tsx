@@ -55,10 +55,10 @@ export default async function Admin() {
   return (
     <main className="mx-auto max-w-3xl p-6">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="nastaliq text-3xl text-gold-deep">پاسخ‌ها</h1>
+        <h1 className="nastaliq text-3xl text-ink">پاسخ‌ها</h1>
         <a
           href="/admin/export"
-          className="shrink-0 rounded-xl bg-olive px-4 py-2 text-sm font-medium text-paper transition hover:bg-olive-deep"
+          className="shrink-0 rounded-xl bg-umber px-4 py-2 text-sm font-medium text-white transition hover:bg-ink"
         >
           دانلود CSV
         </a>
@@ -67,7 +67,7 @@ export default async function Admin() {
       <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {stats.map((s) => (
           <div key={s.l} className="leaf rounded-2xl p-4 text-center">
-            <div className="tabular text-2xl text-gold-ink">{toFa(s.v)}</div>
+            <div className="tabular text-2xl text-umber">{toFa(s.v)}</div>
             <div className="mt-1 text-xs text-muted">{s.l}</div>
           </div>
         ))}
@@ -76,7 +76,7 @@ export default async function Admin() {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[30rem] text-sm">
           <thead className="text-xs text-muted">
-            <tr className="border-b border-gold-pale">
+            <tr className="border-b border-line">
               <th className="p-2 text-start font-normal">نام</th>
               <th className="p-2 text-start font-normal">پاسخ</th>
               <th className="p-2 text-start font-normal">نفر</th>
@@ -85,13 +85,13 @@ export default async function Admin() {
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-b border-gold-pale">
+              <tr key={r.id} className="border-b border-line">
                 <td className="p-2">{r.name}</td>
                 <td className="p-2">
                   {r.attending === null ? (
                     <span className="text-muted/70">—</span>
                   ) : r.attending ? (
-                    <span className="text-olive">می‌آید</span>
+                    <span className="text-umber">می‌آید</span>
                   ) : (
                     <span className="text-muted">نمی‌آید</span>
                   )}

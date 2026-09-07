@@ -56,7 +56,7 @@ export default function Comments({
     <div className="mt-3">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="text-xs text-muted transition hover:text-gold-ink"
+        className="text-xs text-muted transition hover:text-umber"
       >
         {comments.length > 0
           ? `${toFa(comments.length)} نظر`
@@ -73,10 +73,10 @@ export default function Comments({
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="mt-3 flex flex-col gap-3 border-t border-gold-pale pt-3">
+            <div className="mt-3 flex flex-col gap-3 border-t border-line pt-3">
               {comments.map((c) => (
                 <div key={c.id} className="text-sm">
-                  <span className="text-gold-ink">{c.author}</span>
+                  <span className="text-umber">{c.author}</span>
                   <time
                     dateTime={c.created_at}
                     className="mx-2 text-xs text-muted/70"
@@ -104,8 +104,8 @@ export default function Comments({
                       aria-expanded={picker}
                       className={`rounded-xl border px-3 text-sm transition ${
                         picker
-                          ? "border-olive/45 bg-olive/12"
-                          : "border-gold-pale bg-sunk/40"
+                          ? "border-umber bg-sunk"
+                          : "border-line bg-transparent"
                       }`}
                     >
                       <Sticker id="heart" size={18} />
@@ -117,13 +117,13 @@ export default function Comments({
                       maxLength={300}
                       placeholder="نظرت..."
                       aria-label="نوشتن نظر"
-                      className="min-w-0 flex-1 rounded-xl border border-gold-pale bg-sunk/40 px-3 py-2 text-sm outline-none placeholder:text-muted/60 focus:border-olive"
+                      className="min-w-0 flex-1 rounded-xl border border-line bg-sunk px-3 py-2 text-sm outline-none placeholder:text-muted/60 focus:border-umber"
                     />
                     <button
                       disabled={busy || !text.trim()}
                       onClick={() => send()}
                       aria-label="ارسال نظر"
-                      className="rounded-xl border border-gold-pale px-4 text-sm text-gold-ink transition hover:bg-sunk disabled:opacity-40"
+                      className="rounded-xl border border-line px-4 text-sm text-umber transition hover:bg-sunk disabled:opacity-40"
                     >
                       ↵
                     </button>

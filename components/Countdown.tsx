@@ -45,7 +45,7 @@ export default function Countdown() {
 
   if (secs === 0)
     return (
-      <p className="nastaliq mt-8 text-center text-[26px] text-[#F6F3E7]">
+      <p className="nastaliq mb-10 text-center text-[24px] text-ink">
         امروز روز ماست
       </p>
     );
@@ -56,21 +56,21 @@ export default function Countdown() {
        come out reversed, with the seconds on the left. */
     <div
       dir="ltr"
-      className="mt-8 flex justify-center"
+      className="mx-auto mb-10 flex max-w-[280px] justify-center"
       aria-label="زمان باقی‌مانده تا مراسم"
     >
       {cells.map(([v, l], i) => (
         <div
           key={l}
           className={`flex-1 text-center ${
-            i === 0 ? "" : "border-l border-gold-lite/30"
+            i === 0 ? "" : "border-l border-line"
           }`}
         >
           {/* the empty first paint reserves the exact height the digits need */}
-          <span className="tabular block text-[23px] text-[#F6F3E7]">
+          <span className="tabular block text-[21px] font-light text-ink">
             {v || " "}
           </span>
-          <small className="-mt-0.5 block text-[10px] tracking-[0.22em] text-gold-lite">
+          <small className="mt-0.5 block text-[9px] tracking-[0.24em] text-muted">
             {l}
           </small>
         </div>

@@ -51,8 +51,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // matches the ground the frame floats on, so the browser chrome blends in
-  themeColor: "#c9c1ae",
+  // matches the ground the card floats on, so the browser chrome blends in
+  themeColor: "#e6ded6",
   colorScheme: "light",
   width: "device-width",
   initialScale: 1,
@@ -66,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <a
           href="#story"
-          className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-200 focus:rounded-lg focus:bg-olive focus:px-4 focus:py-2 focus:text-sm focus:text-paper"
+          className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-200 focus:rounded-lg focus:bg-umber focus:px-4 focus:py-2 focus:text-sm focus:text-white"
         >
           رفتن به محتوا
         </a>

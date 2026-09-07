@@ -16,7 +16,7 @@ export default function PostCard({
   return (
     <article className="leaf rounded-[20px] p-5">
       <header className="mb-3 flex items-baseline justify-between gap-3">
-        <span className="text-sm text-gold-ink">{post.author}</span>
+        <span className="text-sm text-umber">{post.author}</span>
         <div className="flex items-center gap-3">
           <time dateTime={post.created_at} className="text-xs text-muted/75">
             {agoFa(post.created_at)}
@@ -37,7 +37,7 @@ export default function PostCard({
           alt={`عکسی از ${post.author}`}
           loading="lazy"
           decoding="async"
-          className="mt-3 w-full rounded-2xl border border-gold-pale"
+          className="mt-3 w-full rounded-2xl border border-line"
         />
       )}
 

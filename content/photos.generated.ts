@@ -14,21 +14,30 @@ export type Photo = {
 export const photos = {
   "hero": {
     "src": "/design/photos/hero.webp",
-    "w": 1200,
-    "h": 1500,
+    "w": 990,
+    "h": 1400,
     "thumb": "/design/photos/hero-t.webp",
-    "tw": 640,
-    "th": 800,
+    "tw": 538,
+    "th": 760,
     "alt": "شقایق و رامین در مراسم بله‌برون"
   },
-  "heroColour": {
-    "src": "/design/photos/heroColour.webp",
-    "w": 880,
-    "h": 1100,
-    "thumb": "/design/photos/heroColour-t.webp",
-    "tw": 560,
-    "th": 700,
-    "alt": "شقایق و رامین در مراسم بله‌برون"
+  "baleBoron": {
+    "src": "/design/photos/baleBoron.webp",
+    "w": 707,
+    "h": 1000,
+    "thumb": "/design/photos/baleBoron-t.webp",
+    "tw": 453,
+    "th": 640,
+    "alt": "شقایق و رامین در شب بله‌برون"
+  },
+  "proposal": {
+    "src": "/design/photos/proposal.webp",
+    "w": 748,
+    "h": 1000,
+    "thumb": "/design/photos/proposal-t.webp",
+    "tw": 479,
+    "th": 640,
+    "alt": "شقایق و رامین در شب خواستگاری"
   },
   "og": {
     "src": "/design/photos/og.jpg",
@@ -39,86 +48,59 @@ export const photos = {
     "th": 315,
     "alt": "شقایق و رامین"
   },
-  "proposal": {
-    "src": "/design/photos/proposal.webp",
-    "w": 823,
-    "h": 1100,
-    "thumb": "/design/photos/proposal-t.webp",
-    "tw": 523,
-    "th": 700,
-    "alt": "دسته‌گل خواستگاری"
-  },
-  "proposalSquare": {
-    "src": "/design/photos/proposalSquare.webp",
-    "w": 700,
-    "h": 700,
-    "thumb": "/design/photos/proposalSquare-t.webp",
-    "tw": 560,
-    "th": 560,
-    "alt": "خواستگاری"
-  },
-  "ringMoment": {
-    "src": "/design/photos/ringMoment.webp",
-    "w": 1120,
-    "h": 1400,
-    "thumb": "/design/photos/ringMoment-t.webp",
-    "tw": 608,
-    "th": 760,
-    "alt": "لحظه‌ی دست کردن حلقه"
-  },
-  "venue": {
-    "src": "/design/photos/venue.webp",
-    "w": 1600,
-    "h": 1200,
-    "thumb": "/design/photos/venue-t.webp",
-    "tw": 820,
-    "th": 615,
-    "alt": "چیدمان سفره‌ی بله‌برون"
-  },
-  "ringBouquet": {
-    "src": "/design/photos/ringBouquet.webp",
-    "w": 1500,
-    "h": 1125,
-    "thumb": "/design/photos/ringBouquet-t.webp",
-    "tw": 800,
-    "th": 600,
-    "alt": "حلقه روی دسته‌گل سفید و آبی"
-  },
-  "sofreh": {
-    "src": "/design/photos/sofreh.webp",
-    "w": 975,
-    "h": 1300,
-    "thumb": "/design/photos/sofreh-t.webp",
-    "tw": 540,
-    "th": 720,
-    "alt": "جزئیات سفره‌ی عقد"
-  },
-  "ringDetail": {
-    "src": "/design/photos/ringDetail.webp",
-    "w": 1500,
-    "h": 1125,
-    "thumb": "/design/photos/ringDetail-t.webp",
-    "tw": 800,
-    "th": 600,
-    "alt": "حلقه‌ی نامزدی"
-  },
-  "candlelit": {
-    "src": "/design/photos/candlelit.webp",
-    "w": 240,
-    "h": 320,
-    "thumb": "/design/photos/candlelit-t.webp",
-    "tw": 240,
-    "th": 320,
-    "alt": "لحظه‌ای در نور شمع"
-  },
-  "tableau": {
-    "src": "/design/photos/tableau.webp",
+  "gallery1": {
+    "src": "/design/photos/gallery1.webp",
     "w": 600,
     "h": 800,
-    "thumb": "/design/photos/tableau-t.webp",
-    "tw": 450,
-    "th": 600,
-    "alt": "نمای کامل سفره"
+    "thumb": "/design/photos/gallery1-t.webp",
+    "tw": 465,
+    "th": 620,
+    "alt": "قابی از شب بله‌برون"
+  },
+  "gallery2": {
+    "src": "/design/photos/gallery2.webp",
+    "w": 800,
+    "h": 633,
+    "thumb": "/design/photos/gallery2-t.webp",
+    "tw": 620,
+    "th": 491,
+    "alt": "قابی از شب بله‌برون"
+  },
+  "gallery3": {
+    "src": "/design/photos/gallery3.webp",
+    "w": 785,
+    "h": 800,
+    "thumb": "/design/photos/gallery3-t.webp",
+    "tw": 608,
+    "th": 620,
+    "alt": "قابی از شب بله‌برون"
+  },
+  "gallery4": {
+    "src": "/design/photos/gallery4.webp",
+    "w": 600,
+    "h": 800,
+    "thumb": "/design/photos/gallery4-t.webp",
+    "tw": 465,
+    "th": 620,
+    "alt": "قابی از شب بله‌برون"
+  },
+  "gallery5": {
+    "src": "/design/photos/gallery5.webp",
+    "w": 800,
+    "h": 600,
+    "thumb": "/design/photos/gallery5-t.webp",
+    "tw": 620,
+    "th": 465,
+    "alt": "قابی از شب بله‌برون"
+  },
+  "gallery6": {
+    "src": "/design/photos/gallery6.webp",
+    "w": 825,
+    "h": 1100,
+    "thumb": "/design/photos/gallery6-t.webp",
+    "tw": 465,
+    "th": 620,
+    "alt": "خونچه"
   }
 } as const satisfies Record<string, Photo>;
 

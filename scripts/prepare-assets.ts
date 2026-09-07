@@ -1,22 +1,18 @@
 /**
  * Turns the raw `design/` library into the shipped `public/design/` set.
  *
- * Two jobs:
- *   1. Copy the flat PNG/JPG assets the tazhib direction actually uses.
- *      Botanical ornaments and florals are deliberately NOT copied — see
- *      design/ASSETS.md, they belong to the other visual register.
- *   2. Crop and compress the ten photographs. Eight are raw camera exports
- *      (up to 736KB); each becomes a WebP view image and a WebP thumbnail,
- *      desaturated to ~95% so no frame fights the ivory/lapis palette.
+ * Crops every photograph, maps it through the nude duotone curve, and writes
+ * both a view image and a thumbnail as WebP. Re-tints the two ornament marks
+ * from their gold masters. Shrinks the reaction stickers.
  *
  * Writes content/photos.generated.ts so layout knows intrinsic sizes and
  * never reflows.
  *
  *   npx tsx scripts/prepare-assets.ts
  */
-import { mkdir, copyFile, writeFile, readdir, stat } from "node:fs/promises";
+import { mkdir, copyFile, writeFile, readdir } from "node:fs/promises";
 import path from "node:path";
-import sharp from "sharp";
+import sharp, { type Sharp } from "sharp";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const SRC = path.join(ROOT, "design");
@@ -25,44 +21,162 @@ const OUT = path.join(ROOT, "public", "design");
 /** Folders copied through untouched. `texture` is the only tileable JPEG. */
 const COPY_FOLDERS = ["texture"];
 
-/**
- * Transparent PNGs re-encoded as WebP at native size — no crop, no resize, just
- * a format change. Together `florals/` and `ornaments/` are 1.9MB of PNG; the
- * subset below is what the botanical direction actually places on the page.
- */
-const ALPHA_FILES = [
-  // florals — these straddle the section seams
-  "florals/rose-cascade.png",
-  "florals/peony-spray.png",
-  "florals/rose-spray-corner.png",
-  "florals/eucalyptus-watercolour.png",
-  "florals/eucalyptus-branch.png",
-  "florals/calla-lilies.png",
-  "florals/floral-arch-white.png",
+/* ---------------------------------------------------------------------------
+   Duotone.
 
-  // ornaments — section marks, dividers, the greeting wreath
-  "ornaments/wreath-eucalyptus-gold.png",
-  "ornaments/crown-lily-gold.png",
-  "ornaments/arch-poppy-gold.png",
-  "ornaments/ampersand-leaves-gold.png",
-  "ornaments/sprig-olive-branch-gold.png",
-  "ornaments/corner-leaf-vertical-gold.png",
-  "ornaments/divider-leaf-thin-gold.png",
-  "ornaments/divider-braid-heart-gold.png",
-  "ornaments/divider-floral-symmetric-gold.png",
-  "ornaments/divider-leaf-heart-wide-gold.png",
-  "ornaments/lace-scallop-fine-gold.png",
+   Every photograph is mapped through one warm tone curve so the whole site
+   reads as a single material. Three stops, interpolated piecewise:
 
-  // programme pictograms
-  "icons/flower-gold.png",
-  "icons/rings-gold.png",
-  "icons/rose-stem-gold.png",
-  "icons/champagne-glasses-gold.png",
-  "icons/heart-arrow-gold.png",
+     shadow  #4A423C   midtone #C9B8AC   highlight #FAF7F3
 
-  // the gate's seal — olive, to match the band colour
-  "seals/wax-seal-olive-heart.png",
+   A flat sharp `.tint()` cannot do this — it scales toward one colour, which
+   leaves midtones neutral and the result reads as grey-with-a-cast rather than
+   toned. The midtone stop is the whole point: it is where skin sits.
+--------------------------------------------------------------------------- */
+type Rgb = [number, number, number];
+
+const SHADOW: Rgb = [0x4a, 0x42, 0x3c];
+const MID: Rgb = [0xc9, 0xb8, 0xac];
+const HIGH: Rgb = [0xfa, 0xf7, 0xf3];
+
+/** 256-entry lookup, luminance -> toned rgb. */
+function buildLut(): Uint8Array {
+  const lut = new Uint8Array(256 * 3);
+  for (let l = 0; l < 256; l++) {
+    const t = l / 255;
+    // two linear segments meeting at the midtone
+    const [from, to, k] =
+      t < 0.5 ? [SHADOW, MID, t * 2] : [MID, HIGH, (t - 0.5) * 2];
+    for (let c = 0; c < 3; c++) {
+      lut[l * 3 + c] = Math.round(from[c] + (to[c] - from[c]) * k);
+    }
+  }
+  return lut;
+}
+
+const LUT = buildLut();
+
+/** Flatten to luminance, then push every pixel through the curve. */
+async function duotone(pipe: Sharp): Promise<Sharp> {
+  const { data, info } = await pipe
+    .grayscale()
+    .toColourspace("b-w")
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const out = Buffer.allocUnsafe(info.width * info.height * 3);
+  for (let i = 0, o = 0; i < data.length; i++, o += 3) {
+    const at = data[i] * 3;
+    out[o] = LUT[at];
+    out[o + 1] = LUT[at + 1];
+    out[o + 2] = LUT[at + 2];
+  }
+
+  return sharp(out, {
+    raw: { width: info.width, height: info.height, channels: 3 },
+  });
+}
+
+/* ---------------------------------------------------------------------------
+   The wax seal.
+
+   Same idea as the photographs, but the master is burgundy wax with real
+   three-dimensional shading and a keyed background — so the tone curve has to
+   run over luminance while the alpha channel passes through untouched. A flat
+   RGB swap (what the ornaments get) would erase the modelling and leave a
+   silhouette.
+
+   Toned warmer and deeper than the photographs so it still reads as wax
+   against the nude envelope rather than as a smudge.
+--------------------------------------------------------------------------- */
+const SEAL_STOPS: [Rgb, Rgb, Rgb] = [
+  [0x3b, 0x30, 0x2a],
+  [0x8b, 0x72, 0x63],
+  [0xd6, 0xc6, 0xb8],
 ];
+
+async function seal() {
+  const dir = path.join(OUT, "seals");
+  await mkdir(dir, { recursive: true });
+
+  const src = path.join(SRC, "seals/wax-seal-crimson-heart.png");
+  const { data, info } = await sharp(src)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const [lo, mid, hi] = SEAL_STOPS;
+  for (let i = 0; i < data.length; i += 4) {
+    // Rec. 709 luma; the alpha at i + 3 is left exactly as it is
+    const l =
+      (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+    const [from, to, k] =
+      l < 0.5 ? [lo, mid, l * 2] : [mid, hi, (l - 0.5) * 2];
+    for (let c = 0; c < 3; c++) {
+      data[i + c] = Math.round(from[c] + (to[c] - from[c]) * k);
+    }
+  }
+
+  await sharp(data, {
+    raw: { width: info.width, height: info.height, channels: 4 },
+  })
+    .webp({ quality: 90, effort: 6, alphaQuality: 100 })
+    .toFile(path.join(dir, "wax-heart.webp"));
+
+  console.log("  seals/  1 toned");
+}
+
+/* ---------------------------------------------------------------------------
+   Ornaments.
+
+   Two marks, and only two — a rule under section headings and one footer
+   mark. The masters are pre-tinted antique gold (#A8935C), which is too warm
+   and too saturated beside a nude palette, so the RGB is replaced wholesale
+   while the alpha channel is kept exactly as it is.
+
+   That is the right way round for this art: it is already keyed gold-on-
+   transparent, so the antialiasing lives in the alpha. Swapping RGB and
+   leaving alpha alone preserves every soft edge. (ASSETS.md rule 1 forbids a
+   CSS filter for this, not a re-tint at build time.)
+
+   Nothing else from florals/, icons/, persian/ or seals/ is served.
+--------------------------------------------------------------------------- */
+const ORNAMENT_TINT: Rgb = [0xbc, 0xa8, 0x94];
+
+const ORNAMENTS = [
+  "ornaments/divider-braid-heart-gold.png", // under section headings
+  "ornaments/crown-lily-gold.png", // the footer mark
+];
+
+async function ornaments() {
+  const dir = path.join(OUT, "ornaments");
+  await mkdir(dir, { recursive: true });
+
+  for (const file of ORNAMENTS) {
+    const { data, info } = await sharp(path.join(SRC, file))
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = ORNAMENT_TINT[0];
+      data[i + 1] = ORNAMENT_TINT[1];
+      data[i + 2] = ORNAMENT_TINT[2];
+      // data[i + 3] — alpha untouched
+    }
+
+    const out = path.join(
+      dir,
+      path.basename(file).replace(/-gold\.png$/, ".webp")
+    );
+    await sharp(data, {
+      raw: { width: info.width, height: info.height, channels: 4 },
+    })
+      .webp({ quality: 90, effort: 6, alphaQuality: 100 })
+      .toFile(out);
+  }
+  console.log(`  ornaments/  ${ORNAMENTS.length} re-tinted`);
+}
 
 type Slot = {
   /** key used in content/photos.generated.ts */
@@ -77,30 +191,34 @@ type Slot = {
   alt: string;
   /** JPEG instead of WebP — only the link-preview image needs this */
   jpeg?: boolean;
-  /** warm-toned black and white, for the full-bleed hero */
-  mono?: boolean;
 };
 
 const SLOTS: Slot[] = [
   {
-    // The full-bleed hero. 1920x2560 portrait already; taken down to 4:5 so a
-    // phone screen still has room for the dome that rises over it.
+    // The full-bleed hero, uncropped at its native 1426x2016. The couple sits
+    // centre-right and the top-left is empty wall — that space is where the
+    // names go, so cropping it away would defeat the composition.
     id: "hero",
-    src: "story-8.jpg",
-    crop: { left: 0, top: 0, width: 1920, height: 2400 },
-    view: 1500,
-    thumb: 800,
-    mono: true,
+    src: "new-hero.webp",
+    view: 1400,
+    thumb: 760,
     alt: "شقایق و رامین در مراسم بله‌برون",
   },
   {
-    // the same frame in colour, for the story timeline
-    id: "heroColour",
-    src: "story-8.jpg",
-    crop: { left: 0, top: 0, width: 1920, height: 2400 },
-    view: 1100,
-    thumb: 700,
-    alt: "شقایق و رامین در مراسم بله‌برون",
+    // the بله‌برون chapter
+    id: "baleBoron",
+    src: "bale-boron.webp",
+    view: 1000,
+    thumb: 640,
+    alt: "شقایق و رامین در شب بله‌برون",
+  },
+  {
+    // the خواستگاری chapter — the only frame from that evening
+    id: "proposal",
+    src: "story-1.jpg",
+    view: 1000,
+    thumb: 640,
+    alt: "شقایق و رامین در شب خواستگاری",
   },
   {
     // Link previews in WhatsApp/Telegram want landscape. story-5 is the only
@@ -116,70 +234,46 @@ const SLOTS: Slot[] = [
     jpeg: true,
   },
   {
-    id: "proposal",
-    src: "story-1.jpg",
+    id: "gallery1",
+    src: "gallery1.jpg",
     view: 1100,
-    thumb: 700,
-    alt: "دسته‌گل خواستگاری",
+    thumb: 620,
+    alt: "قابی از شب بله‌برون",
   },
   {
-    id: "proposalSquare",
-    src: "story-2.jpg",
-    view: 700,
-    thumb: 560,
-    alt: "خواستگاری",
+    id: "gallery2",
+    src: "gallery2.jpg",
+    view: 1100,
+    thumb: 620,
+    alt: "قابی از شب بله‌برون",
   },
   {
-    id: "ringMoment",
-    src: "story-5.jpg",
-    // 2560x1920 landscape -> 4:5 portrait centred on the joined hands
-    crop: { left: 482, top: 0, width: 1536, height: 1920 },
-    view: 1400,
-    thumb: 760,
-    alt: "لحظه‌ی دست کردن حلقه",
+    id: "gallery3",
+    src: "gallery3.jpg",
+    view: 1100,
+    thumb: 620,
+    alt: "قابی از شب بله‌برون",
   },
   {
-    id: "venue",
-    src: "story-7.jpg",
-    view: 1600,
-    thumb: 820,
-    alt: "چیدمان سفره‌ی بله‌برون",
+    id: "gallery4",
+    src: "gallery4.jpg",
+    view: 1100,
+    thumb: 620,
+    alt: "قابی از شب بله‌برون",
   },
   {
-    id: "ringBouquet",
-    src: "story-6.jpg",
-    view: 1500,
-    thumb: 800,
-    alt: "حلقه روی دسته‌گل سفید و آبی",
+    id: "gallery5",
+    src: "gallery5.jpg",
+    view: 1100,
+    thumb: 620,
+    alt: "قابی از شب بله‌برون",
   },
   {
-    id: "sofreh",
-    src: "story-3.jpg",
-    view: 1300,
-    thumb: 720,
-    alt: "جزئیات سفره‌ی عقد",
-  },
-  {
-    id: "ringDetail",
-    src: "hero.jpg",
-    view: 1500,
-    thumb: 800,
-    alt: "حلقه‌ی نامزدی",
-  },
-  {
-    id: "candlelit",
-    src: "story-4.jpg",
-    // 240x320 source — never upscaled, thumbnail duty only
-    view: 320,
-    thumb: 320,
-    alt: "لحظه‌ای در نور شمع",
-  },
-  {
-    id: "tableau",
-    src: "story-9.jpg",
-    view: 800,
-    thumb: 600,
-    alt: "نمای کامل سفره",
+    id: "gallery6",
+    src: "khonche.jpg",
+    view: 1100,
+    thumb: 620,
+    alt: "خونچه",
   },
 ];
 
@@ -211,21 +305,12 @@ async function render(slot: Slot): Promise<Meta> {
       withoutEnlargement: true,
     });
 
-    if (slot.mono) {
-      // Not a plain desaturate. Neutral grey reads cold against warm ivory, so
-      // this is a platinum-print treatment: strip colour, lift contrast a
-      // little, then tint the whites back toward the paper.
-      pipe = pipe
-        .grayscale()
-        .linear(1.08, -10)
-        .tint({ r: 252, g: 246, b: 235 });
-    } else {
-      pipe = pipe.modulate({ saturation: 0.95 });
-    }
+    // a touch of contrast before the curve, so the toning has range to work in
+    pipe = await duotone(pipe.linear(1.06, -8));
 
     const buf = await (slot.jpeg
       ? pipe.jpeg({ quality, progressive: true, mozjpeg: true })
-      : pipe.webp({ quality, effort: 6})
+      : pipe.webp({ quality, effort: 6 })
     ).toBuffer({ resolveWithObject: true });
 
     const name = `${slot.id}${suffix}.${slot.jpeg ? "jpg" : "webp"}`;
@@ -242,35 +327,6 @@ async function render(slot: Slot): Promise<Meta> {
   );
 
   return { src: view.url, w: view.w, h: view.h, thumb: thumb.url, tw: thumb.w, th: thumb.h, alt: slot.alt };
-}
-
-/**
- * Re-encode the transparent PNGs as WebP at native size. Nothing is resized —
- * these are line art and watercolour cutouts whose masters are already close to
- * their display size, and upscaling gold hairlines just softens them.
- */
-async function alphaAssets() {
-  let before = 0;
-  let after = 0;
-
-  for (const file of ALPHA_FILES) {
-    const from = path.join(SRC, file);
-    const to = path.join(OUT, file.replace(/\.png$/, ".webp"));
-    await mkdir(path.dirname(to), { recursive: true });
-
-    const buf = await sharp(from)
-      .webp({ quality: 88, effort: 6, alphaQuality: 100 })
-      .toBuffer();
-
-    before += (await stat(from)).size;
-    after += buf.length;
-    await writeFile(to, buf);
-  }
-
-  console.log(
-    `  ${ALPHA_FILES.length} transparent assets  ` +
-      `${Math.round(before / 1024)}KB PNG -> ${Math.round(after / 1024)}KB WebP`
-  );
 }
 
 /**
@@ -304,7 +360,8 @@ async function main() {
 
   console.log("copying flat assets");
   for (const folder of COPY_FOLDERS) await copyFolder(folder);
-  await alphaAssets();
+  await ornaments();
+  await seal();
   await stickers();
 
   console.log("\nrendering photographs");

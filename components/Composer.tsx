@@ -69,7 +69,7 @@ export default function Composer() {
         maxLength={500}
         rows={3}
         placeholder="چیزی برای ما بنویس..."
-        className="w-full resize-none rounded-xl border border-gold-pale bg-sunk/40 p-4 text-sm outline-none placeholder:text-muted/60 focus:border-olive"
+        className="w-full resize-none rounded-xl border border-line bg-sunk p-4 text-sm outline-none placeholder:text-muted/60 focus:border-umber"
       />
 
       {preview && (
@@ -77,12 +77,12 @@ export default function Composer() {
           <img
             src={preview}
             alt="پیش‌نمایش عکس انتخاب‌شده"
-            className="w-full rounded-2xl border border-gold-pale"
+            className="w-full rounded-2xl border border-line"
           />
           <button
             onClick={clearImage}
             aria-label="حذف عکس"
-            className="absolute end-3 top-3 h-8 w-8 rounded-full bg-ink/75 text-lg leading-none text-paper backdrop-blur-sm"
+            className="absolute end-3 top-3 h-8 w-8 rounded-full bg-ink/75 text-lg leading-none text-white backdrop-blur-sm"
           >
             ×
           </button>
@@ -100,21 +100,21 @@ export default function Composer() {
       <div className="mt-3 flex gap-2">
         <button
           onClick={() => fileRef.current?.click()}
-          className="rounded-xl border border-gold-pale px-4 py-3 text-sm text-gold-ink transition hover:bg-sunk"
+          className="rounded-xl border border-line px-4 py-3 text-sm text-umber transition hover:bg-sunk"
         >
           عکس
         </button>
         <button
           disabled={busy || (!body.trim() && !blob)}
           onClick={submit}
-          className="flex-1 rounded-xl bg-olive py-3 text-sm font-medium text-paper transition hover:bg-olive-deep disabled:opacity-40"
+          className="flex-1 rounded-xl bg-umber py-3 text-sm font-medium text-white transition hover:bg-ink disabled:opacity-40"
         >
           {busy ? "..." : "بفرست"}
         </button>
       </div>
 
       {msg && (
-        <p role="status" className="mt-3 text-center text-sm text-gold-ink">
+        <p role="status" className="mt-3 text-center text-sm text-umber">
           {msg}
         </p>
       )}
