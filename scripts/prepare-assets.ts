@@ -1,9 +1,10 @@
 /**
  * Turns the raw `design/` library into the shipped `public/design/` set.
  *
- * Crops every photograph, maps it through the nude duotone curve, and writes
- * both a view image and a thumbnail as WebP. Re-tints the two ornament marks
- * from their gold masters. Shrinks the reaction stickers.
+ * Crops every photograph and writes both a view image and a thumbnail as WebP.
+ * Photographs keep their own colour; only the hero is treated, and only to
+ * black and white. Tones the wax seal and re-tints the two ornament marks from
+ * their gold masters. Shrinks the reaction stickers.
  *
  * Writes content/photos.generated.ts so layout knows intrinsic sizes and
  * never reflows.
@@ -12,7 +13,7 @@
  */
 import { mkdir, copyFile, writeFile, readdir } from "node:fs/promises";
 import path from "node:path";
-import sharp, { type Sharp } from "sharp";
+import sharp from "sharp";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const SRC = path.join(ROOT, "design");
@@ -21,61 +22,10 @@ const OUT = path.join(ROOT, "public", "design");
 /** Folders copied through untouched. `texture` is the only tileable JPEG. */
 const COPY_FOLDERS = ["texture"];
 
-/* ---------------------------------------------------------------------------
-   Duotone.
-
-   Every photograph is mapped through one warm tone curve so the whole site
-   reads as a single material. Three stops, interpolated piecewise:
-
-     shadow  #4A423C   midtone #C9B8AC   highlight #FAF7F3
-
-   A flat sharp `.tint()` cannot do this — it scales toward one colour, which
-   leaves midtones neutral and the result reads as grey-with-a-cast rather than
-   toned. The midtone stop is the whole point: it is where skin sits.
---------------------------------------------------------------------------- */
 type Rgb = [number, number, number];
 
-const SHADOW: Rgb = [0x4a, 0x42, 0x3c];
-const MID: Rgb = [0xc9, 0xb8, 0xac];
-const HIGH: Rgb = [0xfa, 0xf7, 0xf3];
-
-/** 256-entry lookup, luminance -> toned rgb. */
-function buildLut(): Uint8Array {
-  const lut = new Uint8Array(256 * 3);
-  for (let l = 0; l < 256; l++) {
-    const t = l / 255;
-    // two linear segments meeting at the midtone
-    const [from, to, k] =
-      t < 0.5 ? [SHADOW, MID, t * 2] : [MID, HIGH, (t - 0.5) * 2];
-    for (let c = 0; c < 3; c++) {
-      lut[l * 3 + c] = Math.round(from[c] + (to[c] - from[c]) * k);
-    }
-  }
-  return lut;
-}
-
-const LUT = buildLut();
-
-/** Flatten to luminance, then push every pixel through the curve. */
-async function duotone(pipe: Sharp): Promise<Sharp> {
-  const { data, info } = await pipe
-    .grayscale()
-    .toColourspace("b-w")
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-
-  const out = Buffer.allocUnsafe(info.width * info.height * 3);
-  for (let i = 0, o = 0; i < data.length; i++, o += 3) {
-    const at = data[i] * 3;
-    out[o] = LUT[at];
-    out[o + 1] = LUT[at + 1];
-    out[o + 2] = LUT[at + 2];
-  }
-
-  return sharp(out, {
-    raw: { width: info.width, height: info.height, channels: 3 },
-  });
-}
+/* Photographs ship in their own colour. Only the hero is treated, and only to
+   black and white — see the `mono` flag on its slot. */
 
 /* ---------------------------------------------------------------------------
    The wax seal.
@@ -191,6 +141,8 @@ type Slot = {
   alt: string;
   /** JPEG instead of WebP — only the link-preview image needs this */
   jpeg?: boolean;
+  /** black and white — the hero, and nothing else */
+  mono?: boolean;
 };
 
 const SLOTS: Slot[] = [
@@ -202,12 +154,13 @@ const SLOTS: Slot[] = [
     src: "new-hero.webp",
     view: 1400,
     thumb: 760,
+    mono: true,
     alt: "شقایق و رامین در مراسم بله‌برون",
   },
   {
     // the بله‌برون chapter
     id: "baleBoron",
-    src: "bale-boron.webp",
+    src: "bale-boron.jpg",
     view: 1000,
     thumb: 640,
     alt: "شقایق و رامین در شب بله‌برون",
@@ -269,11 +222,13 @@ const SLOTS: Slot[] = [
     alt: "قابی از شب بله‌برون",
   },
   {
-    id: "gallery6",
+    // Not in the gallery — this one sits behind the روزشمار band, blurred and
+    // washed back. It never renders sharp, so a small file is plenty.
+    id: "khoncheBg",
     src: "khonche.jpg",
-    view: 1100,
-    thumb: 620,
-    alt: "خونچه",
+    view: 900,
+    thumb: 500,
+    alt: "",
   },
 ];
 
@@ -305,8 +260,11 @@ async function render(slot: Slot): Promise<Meta> {
       withoutEnlargement: true,
     });
 
-    // a touch of contrast before the curve, so the toning has range to work in
-    pipe = await duotone(pipe.linear(1.06, -8));
+    // The hero is the one treated frame: stripped to black and white with a
+    // small contrast lift, baked in rather than applied as a CSS filter so the
+    // browser never paints the colour version first. Everything else ships as
+    // it was shot.
+    if (slot.mono) pipe = pipe.grayscale().linear(1.06, -8);
 
     const buf = await (slot.jpeg
       ? pipe.jpeg({ quality, progressive: true, mozjpeg: true })

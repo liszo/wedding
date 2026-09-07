@@ -52,11 +52,16 @@ The content
 column (roughly 300px inside a 430px card) is much narrower than the card itself; those
 wide margins are most of what makes it read as printed rather than as a web page.
 
-**Photographs are duotone.** `scripts/prepare-assets.ts` maps every image through one
-warm three-stop curve (`#4A423C` → `#C9B8AC` → `#FAF7F3`) so the whole site reads as a
-single material. A flat `sharp.tint()` cannot do this — it scales toward one colour and
-leaves midtones neutral, which reads as grey-with-a-cast. The midtone stop is the point:
-it is where skin sits.
+**Photographs ship in their own colour.** The one exception is the hero, which is black
+and white — stripped at build time rather than with a CSS filter, so the browser never
+paints the colour version first.
+
+**A photograph can sit behind a band.** `<Band photo={...}>` lays the image down blurred
+and scaled (the scale hides the transparent fringe blur leaves at the edges) under a nude
+wash. The wash alone is not enough: over the darkest part of the composite `--muted`
+measures 3.7:1, under AA. `.band-on-photo` rebinds that one token to a darker value, which
+darkens every `text-muted` inside the band at once without any component knowing — `@theme
+inline` compiles the utility to `color: var(--muted)`, so the override just cascades.
 
 **The wedding chapter never finishes loading.** It has no photograph and no text because
 it has not happened yet, so it renders a crawling progress bar and «به‌زودی…» whose dots

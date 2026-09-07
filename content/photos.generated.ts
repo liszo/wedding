@@ -23,11 +23,11 @@ export const photos = {
   },
   "baleBoron": {
     "src": "/design/photos/baleBoron.webp",
-    "w": 707,
-    "h": 1000,
+    "w": 800,
+    "h": 600,
     "thumb": "/design/photos/baleBoron-t.webp",
-    "tw": 453,
-    "th": 640,
+    "tw": 640,
+    "th": 480,
     "alt": "شقایق و رامین در شب بله‌برون"
   },
   "proposal": {
@@ -93,14 +93,14 @@ export const photos = {
     "th": 465,
     "alt": "قابی از شب بله‌برون"
   },
-  "gallery6": {
-    "src": "/design/photos/gallery6.webp",
-    "w": 825,
-    "h": 1100,
-    "thumb": "/design/photos/gallery6-t.webp",
-    "tw": 465,
-    "th": 620,
-    "alt": "خونچه"
+  "khoncheBg": {
+    "src": "/design/photos/khoncheBg.webp",
+    "w": 675,
+    "h": 900,
+    "thumb": "/design/photos/khoncheBg-t.webp",
+    "tw": 375,
+    "th": 500,
+    "alt": ""
   }
 } as const satisfies Record<string, Photo>;
 

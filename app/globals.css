@@ -143,6 +143,43 @@ body {
   background: var(--nude);
 }
 
+/* A photograph behind a band.
+   Two layers, because one is not enough to guarantee legibility: the image is
+   blurred and scaled (the scale hides the transparent fringe blur leaves at
+   the edges), then a nude wash sits on top of it. The wash is what keeps the
+   contrast ratios in this band the same as everywhere else — without it the
+   secondary text drops to ~3.4:1 over the darker parts of the picture. */
+.band-photo,
+.band-photo-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.band > .band-photo,
+.band > .band-photo-wash {
+  z-index: 0;
+}
+.band-photo {
+  background-position: center;
+  background-size: cover;
+  filter: blur(5px);
+  transform: scale(1.09);
+  opacity: 0.85;
+}
+.band-photo-wash {
+  background: var(--nude);
+  opacity: 0.87;
+}
+
+/* Over the darkest part of the composited backdrop, --muted measures 3.71:1 —
+   under AA. Rebinding the token here darkens every `text-muted` inside the
+   band at once, with no component aware of it: `@theme inline` compiles the
+   utility to `color: var(--muted)`, so the override simply cascades.
+   #5A5048 measures 5.3:1 on the backdrop and 6.8:1 on plain nude. */
+.band-on-photo {
+  --muted: #5a5048;
+}
+
 /* --- type ---------------------------------------------------------------- */
 
 /* Nastaliq descends far below the baseline; it needs the room or it clips. */

@@ -17,31 +17,37 @@ If what you need isn't listed here, say so rather than guessing.**
 npm run assets
 ```
 
-> **The site currently serves almost nothing from this folder.**
+> **The site serves only a small slice of this folder.**
 >
-> The design went minimal and nude: white, sand, warm umber, and no decorative imagery
-> at all. Every rule, frame, monogram and the envelope itself are drawn in CSS. Of
-> everything catalogued below, only `photos/`, `texture/paper-seamless.jpg` and **two**
-> ornaments are shipped: `divider-braid-heart` (the rule under section headings) and
-> `crown-lily` (the footer mark). Both are re-tinted from gold to the nude palette at
-> build time — their RGB is replaced wholesale while alpha is left untouched, which is
-> correct for art already keyed gold-on-transparent and preserves every soft edge.
+> The design is minimal and nude: white, sand, warm umber. Every rule, frame and the
+> envelope body are drawn in CSS. What actually ships is:
 >
-> `florals/`, `ornaments/`, `icons/`, `persian/`, `seals/` and `vector-source/` are kept
-> as a complete archive. They were used by two earlier directions (ivory tazhib, then
-> botanical olive) which are in the git history. Nothing references them at runtime; the
-> catalogue below stands so they are usable again without re-deriving what each file is.
+> - `photos/` — the invitation's photographs
+> - `texture/paper-seamless.jpg` — the paper grain
+> - **two** ornaments, `divider-braid-heart` (the rule under section headings) and
+>   `crown-lily` (the footer and greeting mark)
+> - **one** seal, `wax-seal-crimson-heart`, for the envelope gate
+>
+> The ornaments are re-tinted from gold by replacing RGB wholesale and leaving alpha
+> untouched — correct for art already keyed gold-on-transparent, and it preserves every
+> soft edge. The seal cannot take that treatment: its modelling lives in its colour, so
+> it goes through a luminance curve with alpha passed through, which keeps the wax
+> three-dimensional.
+>
+> `florals/`, `icons/`, `persian/`, the rest of `ornaments/` and `seals/`, and
+> `vector-source/` are kept as a complete archive. They were used by two earlier
+> directions (ivory tazhib, then botanical olive) which are in the git history. Nothing
+> references them at runtime; the catalogue below stands so they are usable again
+> without re-deriving what each file is.
 
-`scripts/prepare-assets.ts` crops every photograph, maps it through the duotone curve,
-compresses it to WebP at two sizes, shrinks the six reaction stickers (1MB of PNG → 88KB
-of WebP), and writes `content/photos.generated.ts` so every `<img>` knows its intrinsic
-size and nothing reflows. Sources and generated output are both committed — Vercel builds
-from git.
+`scripts/prepare-assets.ts` crops every photograph, compresses it to WebP at two sizes,
+shrinks the six reaction stickers (1MB of PNG → 88KB of WebP), and writes
+`content/photos.generated.ts` so every `<img>` knows its intrinsic size and nothing
+reflows. Sources and generated output are both committed — Vercel builds from git.
 
-**All photographs are duotone**, mapped through one warm three-stop curve:
-`#4A423C` (shadow) → `#C9B8AC` (midtone) → `#FAF7F3` (highlight). A flat `sharp.tint()`
-cannot produce this — it scales toward a single colour and leaves midtones neutral, which
-reads as grey with a cast rather than toned. The midtone stop is where skin sits.
+**Photographs keep their own colour.** Only `new-hero.webp` is treated, and only to black
+and white (grayscale plus a small contrast lift), baked in at build time. The wax seal and
+the two ornaments are still re-toned to the palette — they are marks, not photographs.
 
 ---
 
@@ -79,9 +85,10 @@ everything else is kept because it may be wanted again.
 
 | File | Size | Ships as | What it is |
 |---|---|---|---|
-| `new-hero.webp` | 1426×2016 | `hero` | **The hero**, full-bleed and uncropped. Couple centre-right, a phone in the foreground, and empty wall panelling top-left — that corner is where the names sit, so do not crop it away. |
-| `bale-boron.webp` | 1426×2016 | `baleBoron` | The بله‌برون chapter. **Currently byte-identical to `new-hero.webp`** (same md5), so the same frame appears twice on the page. Almost certainly a copy slip — drop the intended photo in under this name and re-run `npm run assets`. |
+| `new-hero.webp` | 1426×2016 | `hero` | **The hero**, full-bleed and uncropped, and the **only** treated photograph — black and white. Couple centre-right, a phone in the foreground, and empty wall panelling top-left; that corner is where the names sit, so do not crop it away. |
+| `bale-boron.jpg` | 800×600 | `baleBoron` | The بله‌برون chapter. (`bale-boron.webp` is a leftover copy of the hero and is no longer referenced.) |
 | `story-1.jpg` | 860×1150 | `proposal` | The خواستگاری chapter. Couple with the orange-peach bouquet, Persian miniature behind. |
+| `khonche.jpg` | 1920×2560 | `khoncheBg` | **Not in the gallery.** Sits behind the روزشمار band, blurred and washed back — cream velvet trays, pearls and satin flowers, already light and low-contrast, which is why it works there. |
 | `gallery1.jpg` | 600×800 | `gallery1` | Proposal evening — bouquet, Turkish lamps, hallway. |
 | `gallery2.jpg` | 800×633 | `gallery2` | Seated on the sofreh, wide, both faces to camera. |
 | `gallery3.jpg` | 785×800 | `gallery3` | Seated, looking at each other, chandelier overhead. |

@@ -22,12 +22,15 @@ type Tone = "white" | "nude";
 export function Band({
   children,
   tone = "white",
+  photo,
   className = "",
   id,
   labelledBy,
 }: {
   children: React.ReactNode;
   tone?: Tone;
+  /** a photograph behind the band, blurred and washed back */
+  photo?: string;
   className?: string;
   id?: string;
   labelledBy?: string;
@@ -36,8 +39,20 @@ export function Band({
     <section
       id={id}
       aria-labelledby={labelledBy}
-      className={`band grain ${tone === "nude" ? "band-nude" : "band-white"} ${className}`}
+      className={`band grain ${tone === "nude" ? "band-nude" : "band-white"} ${
+        photo ? "band-on-photo overflow-hidden" : ""
+      } ${className}`}
     >
+      {photo && (
+        <>
+          <div
+            aria-hidden
+            className="band-photo"
+            style={{ backgroundImage: `url(${photo})` }}
+          />
+          <div aria-hidden className="band-photo-wash" />
+        </>
+      )}
       {children}
     </section>
   );

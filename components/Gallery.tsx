@@ -18,7 +18,6 @@ const SET: Photo[] = [
   photos.gallery3,
   photos.gallery4,
   photos.gallery5,
-  photos.gallery6,
 ];
 
 /** Chevrons as SVG, not « » — those characters are bidi-mirrored, so in an

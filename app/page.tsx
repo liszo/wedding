@@ -18,6 +18,7 @@ import Rsvp from "@/components/Rsvp";
 import MusicPlayer from "@/components/MusicPlayer";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
+import { photos } from "@/content/photos.generated";
 import { Band, SectionHead, Seam } from "@/components/ui";
 
 /**
@@ -51,7 +52,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
           <Seam />
 
-          <Band tone="nude">
+          <Band tone="nude" photo={photos.khoncheBg.src}>
             <Reveal>
               <SectionHead label="تا آن روز" title="روزشمار" className="mb-8" />
               <Countdown />
