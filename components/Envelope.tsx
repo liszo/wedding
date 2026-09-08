@@ -7,54 +7,31 @@ import { ORNAMENT } from "@/components/ui";
 import * as music from "@/lib/music";
 
 /**
- * The only two florals the site serves, and both only here — an envelope's
- * lining is inside it, so they never touch the invitation. See the note in
- * scripts/prepare-assets.ts.
+ * The only two florals the site serves, and both only here — they belong to
+ * the envelope, never to the invitation. Two different sprays: one master used
+ * twice, even mirrored, reads as a single butterfly rather than as flowers.
+ * See the note in scripts/prepare-assets.ts.
  */
 const FLORAL = {
-  sheet: "/design/florals/rose-sheet.webp",
   cascade: "/design/florals/rose-cascade.webp",
+  peony: "/design/florals/peony-spray.webp",
 } as const;
-
-const SEEN = "wg-envelope-opened";
-
-/* Whether the seal has been broken lives in sessionStorage, which is an
-   external store — reading it in an effect and calling setState would cost a
-   cascading render and flash the envelope at someone who already opened it. */
-const listeners = new Set<() => void>();
-/** Fallback for when storage throws, so the seal still opens exactly once. */
-let openedInMemory = false;
-
-function subscribe(fn: () => void) {
-  listeners.add(fn);
-  return () => void listeners.delete(fn);
-}
-
-function isOpened(): boolean {
-  if (openedInMemory) return true;
-  try {
-    return sessionStorage.getItem(SEEN) === "1";
-  } catch {
-    // private mode or storage blocked — show the envelope, it still works
-    return false;
-  }
-}
-
-/** On the server, assume opened: the gate is a client-only flourish. */
-function openedOnServer() {
-  return true;
-}
 
 /**
  * The sealed invitation. Renders above the page, never instead of it — the
  * whole site is already in the DOM underneath, so no-JS visitors and crawlers
- * skip this entirely.
+ * skip this entirely (app/layout.tsx hides the gates when scripting is off).
+ *
+ * It is sealed again on every load. Nothing about having opened it is
+ * remembered: the envelope is the way in to the invitation, and a guest coming
+ * back to their link should get the way in, not a page that starts halfway
+ * through.
  *
  * All the choreography is CSS (see .gate in globals.css); this only flips
  * `go` (start the animation) and then `open` (fade the whole layer out).
  */
 export default function Envelope({ guestName }: { guestName?: string }) {
-  const opened = useSyncExternalStore(subscribe, isOpened, openedOnServer);
+  const [opened, setOpened] = useState(false);
   // The music question comes first; the envelope waits behind it so the two
   // overlays never stack or fight over focus.
   const musicChoice = useSyncExternalStore(
@@ -93,22 +70,14 @@ export default function Envelope({ guestName }: { guestName?: string }) {
     window.setTimeout(() => setLeaving(true), reduce ? 100 : 2000);
 
     // let the flap and bloom play out before the layer is removed
-    const wait = reduce ? 350 : 2950;
-    window.setTimeout(() => {
-      openedInMemory = true;
-      try {
-        sessionStorage.setItem(SEEN, "1");
-      } catch {
-        // ignore — worst case the gate shows again on the next navigation
-      }
-      for (const fn of listeners) fn();
-    }, wait);
+    window.setTimeout(() => setOpened(true), reduce ? 350 : 2950);
   }
 
   if (opened || waiting) return null;
 
   return (
     <div
+      data-gate
       className={`gate${going ? " go" : ""}${leaving ? " open" : ""}`}
       role="dialog"
       aria-modal="true"
@@ -162,14 +131,11 @@ export default function Envelope({ guestName }: { guestName?: string }) {
               uncovers, the flowers and the contents that rise out of it, then
               the pocket front with its three fold panels, then the flap. */}
           <span className="e-back" />
-          <span
-            className="e-liner"
-            style={{ backgroundImage: `url(${FLORAL.sheet})` }}
-          />
+          <span className="e-liner" />
 
           <span className="e-bloom" aria-hidden>
             <img src={FLORAL.cascade} alt="" />
-            <img src={FLORAL.cascade} alt="" />
+            <img src={FLORAL.peony} alt="" />
           </span>
 
           <span className="e-stack" aria-hidden>
@@ -200,6 +166,9 @@ export default function Envelope({ guestName }: { guestName?: string }) {
           </span>
 
           <span className="e-flap" />
+
+          {/* the highlight that crosses the paper; see .e-shine */}
+          <span className="e-shine" aria-hidden />
 
           <span className="seal-mark">
             <img

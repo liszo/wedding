@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "assets": "tsx scripts/prepare-assets.ts"
+    "assets": "tsx scripts/prepare-assets.ts",
+    "guests": "tsx scripts/seed-guests.ts guests.csv",
+    "guests:dry": "tsx scripts/seed-guests.ts guests.csv --dry"
   },
   "dependencies": {
     "@fontsource-variable/vazirmatn": "^5.3.0",

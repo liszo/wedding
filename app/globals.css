@@ -68,10 +68,14 @@ body {
   color: var(--ink);
 }
 
+/* No border-radius here. Setting one reshapes the element itself, not just the
+   ring: it overrode `rounded-full` on whichever control happened to hold
+   focus, so the autofocused button in a pair rendered with square corners
+   until you clicked the other one and the two swapped shapes. Outlines already
+   follow the element's own radius. */
 :focus-visible {
   outline: 1.5px solid var(--umber);
   outline-offset: 3px;
-  border-radius: 3px;
 }
 
 /* --- the card ------------------------------------------------------------ */
@@ -532,16 +536,17 @@ body {
 
 /* The lining — the whole point of it is to be uncovered. It fills the pocket;
    the V notched out of .e-front is the only thing that lets you see it, so it
-   appears exactly as the flap swings away. */
+   appears exactly as the flap swings away. Plain: it is the shaded inside of
+   the paper, and a pattern here competed with the flowers coming out of it. */
 .e-liner {
   position: absolute;
   inset: 0;
   z-index: 2;
-  background-color: var(--nude-deep);
-  background-repeat: repeat;
-  background-size: 150px auto;
-  background-position: center -14px;
-  opacity: 0.96;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--nude-deep) 82%, var(--taupe)),
+    var(--nude-deep) 55%
+  );
 }
 
 /* The flowers that come up out of the pocket, behind the photographs. They
@@ -573,25 +578,24 @@ body {
     translate 1.2s 0.8s cubic-bezier(0.2, 0.75, 0.25, 1),
     opacity 0.8s 0.8s;
 }
-/* One master, used twice. The second is mirrored, and then deliberately
-   pulled out of step — smaller, at a different angle, rising less far. Left
-   symmetrical the pair reads as one butterfly rather than as two sprays. */
+/* Two different sprays, at different sizes and angles, rising to different
+   heights. The trailing cascade on the left, the rounder peony on the right. */
 .e-bloom img:first-child {
   left: 2px;
   rotate: -17deg;
 }
 .e-bloom img:last-child {
-  right: 0;
-  width: 132px;
-  rotate: 14deg;
-  scale: -1 1;
+  right: -12px;
+  bottom: 6px;
+  width: 142px;
+  rotate: 13deg;
 }
 .gate.go .e-bloom img {
   translate: 0 -82px;
   opacity: 0.95;
 }
 .gate.go .e-bloom img:last-child {
-  translate: 0 -64px;
+  translate: 0 -74px;
 }
 
 /* What is actually in the envelope: two prints and the date, fanned as they
@@ -804,37 +808,62 @@ body {
    sits above everything in the scene, which is the point — the wax catching
    the light is the half worth seeing — and it lifts away the moment the
    envelope starts to open. */
-.env::after {
-  content: "";
+/* A band of light that travels across the paper, waits off the far edge, and
+   comes round again.
+
+   It is a real element that moves, not a background-position sweep. Animating
+   `background-position` repaints the whole envelope on the CPU every frame —
+   over a 3D-transformed parent with a blended paper texture that is enough to
+   drop frames, and the sweep visibly hitched at the start of each pass. A
+   transform on its own layer does not repaint anything.
+
+   The window is flush to the paper and clips: bled outwards the band carries
+   on over bare ground either side of the envelope, where there is nothing to
+   catch light, and it reads as a pale slab rather than a sheen. */
+.e-shine {
   position: absolute;
-  /* Flush to the paper, not past it. Bled outwards the highlight carries on
-     over bare ground either side of the envelope, where there is nothing to
-     catch light, and it reads as a pale slab rather than a sheen. */
   inset: 0;
   z-index: 8;
+  overflow: hidden;
   pointer-events: none;
-  background: linear-gradient(
-    100deg,
-    rgba(255, 255, 255, 0) 43%,
-    rgba(255, 255, 255, 0.3) 48.5%,
-    rgba(255, 255, 255, 0.55) 50%,
-    rgba(255, 255, 255, 0.3) 51.5%,
-    rgba(255, 255, 255, 0) 57%
-  );
-  background-size: 300% 100%;
-  animation: sheen 6.5s cubic-bezier(0.45, 0, 0.35, 1) infinite;
   transition: opacity 0.4s;
 }
+.e-shine::before {
+  content: "";
+  position: absolute;
+  /* taller than the envelope so the slant never shows its ends */
+  top: -30%;
+  bottom: -30%;
+  /* Both holds have to park the band completely outside the clip, and the
+     10deg tilt makes its painted box far wider than its width — so the start
+     sits further out and the travel runs further than the window is wide. */
+  left: -55%;
+  width: 34%;
+  rotate: 10deg;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.44) 42%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.44) 58%,
+    rgba(255, 255, 255, 0)
+  );
+  will-change: transform;
+  animation: sheen 5.2s cubic-bezier(0.55, 0, 0.45, 1) infinite;
+}
+/* `translate`, not `transform`, because the band carries `rotate` — see the
+   note on .e-bloom. Both holds park it fully outside the clip. */
 @keyframes sheen {
-  0% {
-    background-position: 175% 0;
+  0%,
+  24% {
+    translate: 0 0;
   }
-  36%,
+  76%,
   100% {
-    background-position: -75% 0;
+    translate: 540px 0;
   }
 }
-.gate.go .env::after {
+.gate.go .e-shine {
   opacity: 0;
 }
 .env:hover .seal-mark {
@@ -858,6 +887,276 @@ body {
     transform: scale(3.4);
     opacity: 0;
   }
+}
+
+/* --- the wall ------------------------------------------------------------
+   A room, not a feed. The shapes here are the ones a messaging app uses —
+   a bar pinned at the top, a scrolling log, a dock pinned at the bottom —
+   drawn in the invitation's own palette so it still belongs to the card.
+
+   Everything is logical (`inline-start`/`inline-end`, `ms-`/`me-`), never
+   physical: the document is RTL, so your own messages belong against the near
+   edge and everyone else's against the far one.
+-------------------------------------------------------------------------- */
+.chat-app {
+  position: relative;
+  display: flex;
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  flex-direction: column;
+  background: var(--nude);
+}
+/* the same paper the invitation is printed on, standing in for a chat
+   wallpaper — fixed, so it does not slide with the messages */
+.chat-app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: url("/design/texture/paper-seamless.jpg") repeat 0 0 / 190px 190px;
+  mix-blend-mode: multiply;
+  opacity: 0.26;
+  pointer-events: none;
+}
+
+.chat-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  background: color-mix(in srgb, var(--white) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.chat-back {
+  display: flex;
+  align-items: center;
+  color: var(--umber);
+  padding: 2px;
+}
+/* the chevron points along the reading direction */
+[dir="rtl"] .chat-back svg {
+  scale: -1 1;
+}
+.chat-top-avatar {
+  display: flex;
+  height: 34px;
+  width: 34px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--nude-deep);
+  border: 1px solid var(--line);
+}
+
+.chat-log {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  padding: 16px 12px 20px;
+}
+
+.chat-day {
+  align-self: center;
+  margin: 12px 0 6px;
+}
+.chat-day span {
+  display: block;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--white) 85%, transparent);
+  border: 1px solid var(--line);
+  padding: 3px 12px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.chat-bubble {
+  position: relative;
+  padding: 8px 11px 6px;
+  border-radius: 17px;
+  box-shadow: 0 1px 2px rgba(46, 42, 38, 0.07);
+}
+.chat-theirs {
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+.chat-mine {
+  background: var(--nude-deep);
+  border: 1px solid color-mix(in srgb, var(--taupe) 45%, transparent);
+}
+/* the squared corner that makes a bubble point at its sender */
+.chat-tail-theirs {
+  border-start-start-radius: 5px;
+}
+.chat-tail-mine {
+  border-start-end-radius: 5px;
+}
+
+.chat-text {
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.chat-photo {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  border-radius: 12px;
+  margin-bottom: 5px;
+}
+
+.chat-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 9.5px;
+  color: var(--muted);
+}
+/* a sticker has no bubble to sit in, so its caption needs its own air */
+.chat-meta-bare {
+  justify-content: flex-start;
+  gap: 6px;
+  margin-top: 3px;
+  padding-inline: 2px;
+}
+
+/* the quoted message a reply answers */
+.chat-quote {
+  display: block;
+  margin-bottom: 5px;
+  border-inline-start: 2px solid var(--taupe);
+  padding-inline-start: 7px;
+}
+.chat-quote-who {
+  display: block;
+  font-size: 10.5px;
+  color: var(--umber);
+}
+.chat-quote-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.chat-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--white) 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.chat-replying,
+.chat-attach {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 0;
+}
+.chat-attach img {
+  height: 54px;
+  width: 54px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+}
+.chat-attach button {
+  height: 22px;
+  width: 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.chat-tray {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  padding: 10px 10px 0;
+}
+
+.chat-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 8px 10px;
+}
+.chat-icon {
+  display: flex;
+  height: 38px;
+  width: 34px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--muted);
+  transition: background 0.2s;
+}
+.chat-icon:hover,
+.chat-icon-on {
+  background: var(--sunk, var(--nude-deep));
+  color: var(--umber);
+}
+.chat-input {
+  min-width: 0;
+  flex: 1;
+  max-height: 116px;
+  resize: none;
+  border-radius: 19px;
+  border: 1px solid var(--line);
+  background: var(--nude);
+  padding: 9px 14px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  outline: none;
+}
+.chat-input::placeholder {
+  color: color-mix(in srgb, var(--muted) 60%, transparent);
+}
+.chat-input:focus {
+  border-color: var(--taupe);
+}
+.chat-send {
+  display: flex;
+  height: 38px;
+  width: 38px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--umber);
+  color: var(--white);
+  transition:
+    background 0.2s,
+    opacity 0.2s;
+}
+.chat-send:disabled {
+  opacity: 0.35;
+}
+/* the paper-plane points the way the text runs */
+[dir="rtl"] .chat-send svg {
+  scale: -1 1;
 }
 
 /* --- the unfinished chapter ---------------------------------------------- */

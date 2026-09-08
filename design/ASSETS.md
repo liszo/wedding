@@ -35,10 +35,11 @@ npm run assets
 > three-dimensional.
 >
 > Two files from `florals/` also ship, and only into the envelope gate:
-> `rose-sheet.png` is its lining and `rose-cascade.png` rises out of the pocket. Both
-> are desaturated on the way through — at full strength their greens fight a nude
-> palette. The invitation itself stays floral-free; an envelope's lining is by
-> definition something you only see once it opens.
+> `rose-cascade.png` and `peony-spray.png` are the two sprays that rise out of the
+> pocket when it opens. Two different masters on purpose — one used twice, even
+> mirrored, reads as a single butterfly rather than as flowers. Both are desaturated on
+> the way through: at full strength their greens fight a nude palette. The invitation
+> itself stays floral-free.
 >
 > The rest of `florals/`, plus `icons/`, `persian/`, the rest of `ornaments/` and
 > `seals/`, and `vector-source/`, are kept as a complete archive. They were used by two

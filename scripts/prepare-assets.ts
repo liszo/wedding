@@ -14,6 +14,7 @@
 import { mkdir, copyFile, writeFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
+import { STICKERS } from "../content/stickers";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const SRC = path.join(ROOT, "design");
@@ -131,23 +132,24 @@ async function ornaments() {
 /* ---------------------------------------------------------------------------
    Florals — the only two, and both only for the envelope gate.
 
-   The redesign is otherwise floral-free. These are the exception because the
-   lining of an envelope is *inside* it: the sheet of roses is what the flap
-   uncovers, and the cascade is what rises out of the pocket. Neither appears
-   anywhere on the invitation itself.
+   The redesign is otherwise floral-free. These are the exception: they are the
+   flowers that rise out of the pocket when the envelope opens, and they never
+   appear on the invitation itself.
+
+   Two different masters, deliberately. One spray used twice — even mirrored —
+   reads as a single butterfly rather than as two bunches of flowers.
 
    Both are desaturated on the way through. The masters are painted at full
-   strength and their greens fight a nude palette; pulled back they read as
-   the muted botanical lining of a card rather than as decoration.
+   strength and their greens fight a nude palette; pulled back they sit with it.
 
-   The cascade is trimmed first — its master is mostly transparent margin, and
-   shipping that margin would triple the file for nothing.
+   Both are trimmed first: the masters are mostly transparent margin, and
+   shipping that margin would multiply the file size for nothing.
 --------------------------------------------------------------------------- */
 const FLORALS = [
-  // the lining the flap uncovers; scaled to fill the pocket
-  { file: "florals/rose-sheet.png", out: "rose-sheet.webp", width: 340, saturation: 0.72, trim: false },
-  // rises out of the envelope behind the photographs
+  // the trailing spray, on the left
   { file: "florals/rose-cascade.png", out: "rose-cascade.webp", width: 260, saturation: 0.5, trim: true },
+  // the fuller, rounder one, on the right
+  { file: "florals/peony-spray.png", out: "peony-spray.webp", width: 240, saturation: 0.5, trim: true },
 ] as const;
 
 async function florals() {
@@ -332,17 +334,28 @@ async function render(slot: Slot): Promise<Meta> {
 }
 
 /**
- * The six reaction stickers ship at 147-205KB of PNG each — a megabyte of
+ * The reaction stickers ship at 147-205KB of PNG each — a megabyte of
  * transparency for something drawn at 20-56px. Two WebP sizes replace them.
+ *
+ * It walks the declared set in content/stickers.ts, not the folder. Globbing
+ * `design/stickers/*.png` meant that dropping a master in there silently
+ * shipped it, whether or not anything referenced it — and the masters are
+ * ~2MB each. A sticker exists when it is declared; the file is just where its
+ * art lives.
  */
 async function stickers() {
   const from = path.join(SRC, "stickers");
   const to = path.join(ROOT, "public", "stickers");
   await mkdir(to, { recursive: true });
 
-  for (const file of await readdir(from)) {
-    if (!file.endsWith(".png")) continue;
-    const id = path.basename(file, ".png");
+  const present = new Set(await readdir(from));
+
+  for (const { id } of STICKERS) {
+    if (!present.has(`${id}.png`)) {
+      console.warn(`  ⚠ stickers/${id}.png declared but missing`);
+      continue;
+    }
+    const file = `${id}.png`;
     for (const [suffix, size] of [
       ["", 112], // 56px sticker comment at 2x
       ["-s", 48], // 24px inline at 2x

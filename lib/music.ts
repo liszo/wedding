@@ -11,26 +11,19 @@
 
 export type Choice = "yes" | "no" | null;
 
-const KEY = "wg-music";
-
 const listeners = new Set<() => void>();
 let audio: HTMLAudioElement | null = null;
-/** Mirrors sessionStorage, and is the whole answer when storage is blocked. */
-let cached: Choice = null;
-let hydrated = false;
 
-function read(): Choice {
-  if (!hydrated) {
-    try {
-      const v = sessionStorage.getItem(KEY);
-      cached = v === "yes" || v === "no" ? v : null;
-    } catch {
-      cached = null; // private mode — ask again, it costs one tap
-    }
-    hydrated = true;
-  }
-  return cached;
-}
+/**
+ * The answer lives for exactly one page load and is deliberately not persisted.
+ *
+ * It used to sit in sessionStorage, which meant a guest who came back to the
+ * link saw neither the question nor the envelope again. It also could not have
+ * worked: a remembered "yes" cannot start the audio on the next load, because
+ * autoplay needs a gesture and a restored value is not one. Asking again costs
+ * one tap and is the only thing that actually plays the music.
+ */
+let choice: Choice = null;
 
 function emit() {
   for (const fn of listeners) fn();
@@ -42,12 +35,17 @@ export function subscribe(fn: () => void) {
 }
 
 export function getChoice(): Choice {
-  return read();
+  return choice;
 }
 
-/** The server has no session, so it always renders as "already answered". */
+/**
+ * The server renders the question too — unanswered, exactly as the client
+ * first paints it. Returning "answered" here is what used to let the whole
+ * invitation paint for a frame before the overlay took over, which read as the
+ * page flashing up and then being snatched away.
+ */
 export function getServerChoice(): Choice {
-  return "no";
+  return null;
 }
 
 /** Called by the player once its <audio> is in the DOM. */
@@ -60,13 +58,7 @@ export function registerAudio(el: HTMLAudioElement | null) {
  * answer is yes it starts playback immediately, while the gesture still counts.
  */
 export function choose(next: Exclude<Choice, null>) {
-  cached = next;
-  hydrated = true;
-  try {
-    sessionStorage.setItem(KEY, next);
-  } catch {
-    // ignore — the in-memory value carries the session
-  }
+  choice = next;
   if (next === "yes") {
     audio?.play().catch(() => {
       // blocked or failed to decode; the floating button still works

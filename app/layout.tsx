@@ -69,7 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             would ever run that animation and the invitation would be a blank
             card — so with no JS the sections are simply already there. */}
         <noscript>
-          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+          <style>{`[data-reveal]{opacity:1!important;transform:none!important}[data-gate]{display:none!important}`}</style>
         </noscript>
       </head>
       <body className="min-h-full">

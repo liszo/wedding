@@ -7,6 +7,8 @@ export type WallComment = {
   body: string | null;
   sticker: string | null;
   created_at: string;
+  /** written by whoever is reading — the wall renders their own to one side */
+  mine: boolean;
 };
 
 export type ReactionState = { kind: Kind; count: number; mine: boolean };
@@ -17,6 +19,7 @@ export type WallPost = {
   image_url: string | null;
   created_at: string;
   author: string;
+  mine: boolean;
   reactions: ReactionState[];
   comments: WallComment[];
 };
@@ -33,7 +36,7 @@ export async function listPosts(
   const { data } = await db()
     .from("posts")
     .select(
-      "id, body, image_url, created_at, guests(name), reactions(kind, guest_id), comments(id, body, sticker, created_at, guests(name))"
+      "id, body, image_url, created_at, guest_id, guests(name), reactions(kind, guest_id), comments(id, body, sticker, created_at, guest_id, guests(name))"
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -57,6 +60,7 @@ export async function listPosts(
           body: string | null;
           sticker: string | null;
           created_at: string;
+          guest_id: string;
           guests: unknown;
         };
         return {
@@ -65,6 +69,7 @@ export async function listPosts(
           sticker: row.sticker ?? null,
           created_at: row.created_at,
           author: nameOf(row.guests),
+          mine: Boolean(meId) && row.guest_id === meId,
         };
       })
       .sort((a, b) => a.created_at.localeCompare(b.created_at));
@@ -75,6 +80,7 @@ export async function listPosts(
       image_url: (p.image_url as string) ?? null,
       created_at: p.created_at as string,
       author: nameOf(p.guests),
+      mine: Boolean(meId) && (p.guest_id as string) === meId,
       reactions,
       comments,
     };

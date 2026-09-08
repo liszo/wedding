@@ -5,6 +5,7 @@ import { getGuest } from "@/lib/guest";
 // Posting requires a signed-in guest, so the limit keys on the guest rather
 // than the IP — a household behind one connection should not throttle itself.
 import { tooMany } from "@/lib/rate-limit";
+import { isSticker, stickerUrl } from "@/content/stickers";
 
 const BUCKET = "wall";
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -26,6 +27,21 @@ export async function POST(req: Request) {
   const form = await req.formData().catch(() => null);
   if (!form)
     return NextResponse.json({ message: "درخواست نامعتبر." }, { status: 400 });
+
+  // A sticker sent on its own is a whole message, and it travels in image_url:
+  // a sticker is an image, that column holds the URL of one, and the path it
+  // is served from is what tells it apart from an uploaded photograph. No new
+  // column on a table already carrying real guests' posts.
+  const stickerId = form.get("sticker");
+  if (typeof stickerId === "string" && isSticker(stickerId)) {
+    const { error } = await db()
+      .from("posts")
+      .insert({ guest_id: guest.id, body: null, image_url: stickerUrl(stickerId) });
+
+    if (error)
+      return NextResponse.json({ message: "ثبت نشد." }, { status: 500 });
+    return NextResponse.json({ message: "ثبت شد." });
+  }
 
   const body = String(form.get("body") ?? "").slice(0, 500).trim();
   const file = form.get("image");
