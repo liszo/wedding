@@ -128,6 +128,50 @@ async function ornaments() {
   console.log(`  ornaments/  ${ORNAMENTS.length} re-tinted`);
 }
 
+/* ---------------------------------------------------------------------------
+   Florals — the only two, and both only for the envelope gate.
+
+   The redesign is otherwise floral-free. These are the exception because the
+   lining of an envelope is *inside* it: the sheet of roses is what the flap
+   uncovers, and the cascade is what rises out of the pocket. Neither appears
+   anywhere on the invitation itself.
+
+   Both are desaturated on the way through. The masters are painted at full
+   strength and their greens fight a nude palette; pulled back they read as
+   the muted botanical lining of a card rather than as decoration.
+
+   The cascade is trimmed first — its master is mostly transparent margin, and
+   shipping that margin would triple the file for nothing.
+--------------------------------------------------------------------------- */
+const FLORALS = [
+  // the lining the flap uncovers; scaled to fill the pocket
+  { file: "florals/rose-sheet.png", out: "rose-sheet.webp", width: 340, saturation: 0.72, trim: false },
+  // rises out of the envelope behind the photographs
+  { file: "florals/rose-cascade.png", out: "rose-cascade.webp", width: 260, saturation: 0.5, trim: true },
+] as const;
+
+async function florals() {
+  const dir = path.join(OUT, "florals");
+  await mkdir(dir, { recursive: true });
+
+  let total = 0;
+  for (const f of FLORALS) {
+    let pipe = sharp(path.join(SRC, f.file));
+    if (f.trim) pipe = pipe.trim();
+    const buf = await pipe
+      .resize({ width: f.width, withoutEnlargement: true })
+      .modulate({ saturation: f.saturation })
+      .webp({ quality: 74, effort: 6, alphaQuality: 88 })
+      .toBuffer({ resolveWithObject: true });
+    await writeFile(path.join(dir, f.out), buf.data);
+    total += buf.data.length;
+    console.log(
+      `  florals/${f.out.padEnd(20)} ${buf.info.width}x${buf.info.height}  ${Math.round(buf.data.length / 1024)}KB`
+    );
+  }
+  console.log(`  florals/  ${FLORALS.length} toned, ${Math.round(total / 1024)}KB total`);
+}
+
 type Slot = {
   /** key used in content/photos.generated.ts */
   id: string;
@@ -319,6 +363,7 @@ async function main() {
   console.log("copying flat assets");
   for (const folder of COPY_FOLDERS) await copyFolder(folder);
   await ornaments();
+  await florals();
   await seal();
   await stickers();
 

@@ -2,8 +2,19 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "motion/react";
 import { wedding, coupleNames } from "@/content/config";
+import { photos } from "@/content/photos.generated";
 import { ORNAMENT } from "@/components/ui";
 import * as music from "@/lib/music";
+
+/**
+ * The only two florals the site serves, and both only here — an envelope's
+ * lining is inside it, so they never touch the invitation. See the note in
+ * scripts/prepare-assets.ts.
+ */
+const FLORAL = {
+  sheet: "/design/florals/rose-sheet.webp",
+  cascade: "/design/florals/rose-cascade.webp",
+} as const;
 
 const SEEN = "wg-envelope-opened";
 
@@ -131,22 +142,54 @@ export default function Envelope({ guestName }: { guestName?: string }) {
       </div>
 
       <div className="scene">
+        {/* Two sprigs resting against the envelope, so the closed state is not
+            a bare rectangle. This one is before the button in the DOM, which
+            is what puts it behind the paper. */}
+        <img
+          src={FLORAL.cascade}
+          alt=""
+          aria-hidden
+          className="e-sprig e-sprig-a"
+        />
+
         <button
           ref={seal}
           className="env"
           onClick={unseal}
           aria-label="گشودن دعوت‌نامه"
         >
-          {/* the pocket, seen from the back: the shell, then the lined throat
-              the flap uncovers, then the card, then the three fold panels */}
+          {/* The pocket, back to front: the shell, the lining the flap
+              uncovers, the flowers and the contents that rise out of it, then
+              the pocket front with its three fold panels, then the flap. */}
           <span className="e-back" />
-          <span className="e-liner" />
+          <span
+            className="e-liner"
+            style={{ backgroundImage: `url(${FLORAL.sheet})` }}
+          />
 
-          <span className="e-card">
-            <span className="e-card-rule" />
-            <span className="nastaliq text-[23px] text-ink">{coupleNames}</span>
-            <span className="text-[10px] tracking-[0.28em] text-muted">
-              {wedding.dateFa}
+          <span className="e-bloom" aria-hidden>
+            <img src={FLORAL.cascade} alt="" />
+            <img src={FLORAL.cascade} alt="" />
+          </span>
+
+          <span className="e-stack" aria-hidden>
+            <img
+              className="e-pic e-pic-a"
+              src={photos.proposal.thumb}
+              alt=""
+              width={photos.proposal.tw}
+              height={photos.proposal.th}
+            />
+            <img
+              className="e-pic e-pic-b"
+              src={photos.gallery1.thumb}
+              alt=""
+              width={photos.gallery1.tw}
+              height={photos.gallery1.th}
+            />
+            <span className="e-note">
+              <b>{wedding.weekdayFa}</b>
+              <i>{wedding.dateFa}</i>
             </span>
           </span>
 
@@ -168,6 +211,15 @@ export default function Envelope({ guestName }: { guestName?: string }) {
             />
           </span>
         </button>
+
+        {/* and this one after it, lying over the corner of the envelope —
+            the arrangement the reference uses */}
+        <img
+          src={FLORAL.cascade}
+          alt=""
+          aria-hidden
+          className="e-sprig e-sprig-b"
+        />
       </div>
 
       <p className="g-foot text-[11.5px] tracking-[0.16em] text-muted">

@@ -28,8 +28,13 @@ npm run lint
 White, sand and warm umber. Almost everything — the seams, the card border, the
 envelope, every hairline — is drawn in CSS. Exactly **two ornaments** are served, both
 re-tinted from their gold masters to the palette at build time: a braided rule under
-section headings, and a lily crown as the footer mark. Nothing else from the library
-ships.
+section headings, and a lily crown as the footer mark.
+
+**Two florals** ship as well, and both only inside the envelope gate: a sheet of roses
+as its lining and a cascade that rises out of the pocket. The invitation itself stays
+floral-free — the lining of an envelope is by definition something you only see once
+it opens. Both are desaturated on the way through the pipeline; at full strength their
+greens fight the palette. Nothing else from the library ships.
 
 Below the photograph the whole page sits inside `.card-body`, which draws one
 continuous ruled border down its full length — the engraved rule a printed invitation
@@ -107,14 +112,30 @@ Two overlays, in order, both session-scoped so they appear once per visit:
    `<audio>` element in a module-level store and the gate calls `choose("yes")` straight
    from its own click handler, while that gesture still counts. The 4.7MB track is
    `preload="none"` until someone says yes.
-2. **`<Envelope>`** — the sealed gate. Everything but the wax is drawn in CSS: the pocket
-   front is a rectangle with a V notched out of the top, the three fold panels inside it
-   are tinted a few percent apart with the two lower diagonals of an envelope's X as
-   their seams, a gradient stands in for the shadow the closed flap throws, and a slow
-   highlight crosses the paper and the wax once every few seconds. The flap swings back
-   in 3D and the card slides up out of the pocket. The gate itself carries the same
-   double rule and corner diamonds as a printed card. It waits for a music answer before
-   rendering, so the two never stack or fight over focus.
+2. **`<Envelope>`** — the sealed gate, built to a reference the couple supplied.
+   It rests at a slight three-quarter angle and squares up when touched; the flap
+   swings back in 3D and fades as it goes (left solid it stands up behind the envelope
+   as a slab of paper that crowds everything coming out); the lining is uncovered; two
+   sprays of flowers rise out of the pocket, and behind them two photographs fan out
+   either side of a card carrying the date. Their lower halves stay behind the pocket
+   front the whole way, so they read as being drawn out of the envelope rather than
+   appearing over it.
+
+   The paper itself is drawn: the pocket front is a rectangle with a V notched out of
+   the top, the three fold panels inside it are tinted a few percent apart with the two
+   lower diagonals of an envelope's X as their seams, the embossed texture is the same
+   tile the page grain uses, and a slow highlight crosses the paper and the wax every
+   few seconds. Only the wax, the lining and the flowers are images. The gate around it
+   carries the same double rule and corner diamonds as a printed card.
+
+   Everything that moves inside the envelope animates the `translate` property rather
+   than `transform: translate()`. The pieces carry `rotate` and `scale`, and the
+   individual transform properties compose translate → rotate → scale → transform, so a
+   translation written into `transform` runs in the rotated frame and drifts off
+   diagonally.
+
+   It waits for a music answer before rendering, so the two never stack or fight over
+   focus.
 
 ## Guest flow
 

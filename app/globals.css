@@ -431,10 +431,52 @@ body {
 .scene {
   position: relative;
   z-index: 3;
-  perspective: 1100px;
-  width: 282px;
-  height: 192px;
+  perspective: 1200px;
+  width: 300px;
+  height: 200px;
 }
+/* Every position inside the envelope is a pixel tuned against 300x200, so a
+   narrow phone scales the whole scene rather than reflowing it. The layout box
+   stays 300px and the scale is about its centre, so it stays centred. */
+@media (max-width: 359px) {
+  .scene {
+    scale: 0.85;
+  }
+}
+
+/* Two sprigs against the envelope. One is before .env in the DOM and one
+   after, so the first tucks behind the paper and the second lies over the
+   corner of it — which is how the reference arranges them, and it is what
+   stops the pair reading as a symmetrical frame.
+
+   The offsets look tighter than they are: rotation grows the painted box well
+   past the element, and at 375px these already come within a few pixels of
+   the viewport edge. Below that the whole scene scales rather than the parts
+   being re-tuned. */
+.e-sprig {
+  position: absolute;
+  width: 88px;
+  pointer-events: none;
+  opacity: 0.9;
+  transition: opacity 0.6s;
+}
+.e-sprig-a {
+  left: -14px;
+  top: -40px;
+  width: 78px;
+  rotate: -22deg;
+}
+.e-sprig-b {
+  right: -10px;
+  bottom: -34px;
+  z-index: 9;
+  width: 84px;
+  rotate: 162deg;
+}
+.gate.go .e-sprig {
+  opacity: 0;
+}
+
 .env {
   position: relative;
   display: block;
@@ -445,79 +487,196 @@ body {
   background: none;
   transform-style: preserve-3d;
   cursor: pointer;
+  /* It rests at a slight three-quarter angle and squares up when opened —
+     the move the reference opens with. */
+  transform: rotateX(9deg) rotateZ(-2.6deg);
+  transition: transform 1s cubic-bezier(0.2, 0.72, 0.2, 1);
+}
+.env:hover {
+  transform: rotateX(5deg) rotateZ(-1.4deg) translateY(-4px);
+}
+/* three classes, so it outranks :hover and the envelope squares up even if
+   the pointer is still resting on it */
+.gate.go .env {
+  transform: none;
 }
 .env:focus-visible {
   outline: 1.5px solid var(--umber);
   outline-offset: 16px;
 }
 
+/* The paper. Real texture on the two faces you actually see — the gate's own
+   grain layer sits below .scene and never reaches them. */
+.e-back,
+.e-front,
+.e-flap {
+  background-image: url("/design/texture/paper-seamless.jpg");
+  background-repeat: repeat;
+  /* The master is an embossed damask. Tiled small it reads as the weave of
+     heavy cotton paper; anywhere near its native scale the motif itself
+     starts to show and the envelope turns into wallpaper. */
+  background-size: 94px 94px;
+  background-blend-mode: multiply;
+}
+
 .e-back {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: var(--white);
+  background-color: var(--white);
   border: 1px solid var(--line);
   box-shadow:
     0 2px 0 0 color-mix(in srgb, var(--line) 70%, transparent),
-    0 28px 56px -22px rgba(46, 42, 38, 0.34);
+    0 30px 60px -24px rgba(46, 42, 38, 0.36);
 }
-.e-card {
+
+/* The lining — the whole point of it is to be uncovered. It fills the pocket;
+   the V notched out of .e-front is the only thing that lets you see it, so it
+   appears exactly as the flap swings away. */
+.e-liner {
   position: absolute;
-  inset-inline-start: 11px;
-  top: 11px;
+  inset: 0;
+  z-index: 2;
+  background-color: var(--nude-deep);
+  background-repeat: repeat;
+  background-size: 150px auto;
+  background-position: center -14px;
+  opacity: 0.96;
+}
+
+/* The flowers that come up out of the pocket, behind the photographs. They
+   start low enough to be inside it and rise on opening.
+
+   Everything that moves here animates `translate`, not `transform`: these
+   carry `rotate` and `scale`, and the individual transform properties compose
+   translate -> rotate -> scale -> transform, so a translation written into
+   `transform` would run in the rotated frame and drift sideways. */
+.e-bloom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 24px;
   z-index: 3;
-  width: 260px;
-  height: 170px;
+  height: 152px;
+  pointer-events: none;
+}
+.e-bloom img {
+  position: absolute;
+  bottom: 0;
+  display: block;
+  width: 152px;
+  /* They are taller than the pocket and would stand out of the top of a
+     sealed envelope. Nothing clips them — they are simply not there until the
+     flap moves, and they fade in as they rise. */
+  opacity: 0;
+  transition:
+    translate 1.2s 0.8s cubic-bezier(0.2, 0.75, 0.25, 1),
+    opacity 0.8s 0.8s;
+}
+/* One master, used twice. The second is mirrored, and then deliberately
+   pulled out of step — smaller, at a different angle, rising less far. Left
+   symmetrical the pair reads as one butterfly rather than as two sprays. */
+.e-bloom img:first-child {
+  left: 2px;
+  rotate: -17deg;
+}
+.e-bloom img:last-child {
+  right: 0;
+  width: 132px;
+  rotate: 14deg;
+  scale: -1 1;
+}
+.gate.go .e-bloom img {
+  translate: 0 -82px;
+  opacity: 0.95;
+}
+.gate.go .e-bloom img:last-child {
+  translate: 0 -64px;
+}
+
+/* What is actually in the envelope: two prints and the date, fanned as they
+   come out. Their lower halves stay behind .e-front the whole way, so they
+   read as being drawn out of the pocket rather than appearing over it. */
+.e-stack {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.e-pic {
+  position: absolute;
+  top: 54px;
+  display: block;
+  width: 68px;
+  height: 90px;
+  object-fit: cover;
   background: var(--white);
-  border: 1px solid var(--line);
+  border: 4px solid var(--white);
+  box-shadow: 0 10px 20px -9px rgba(46, 42, 38, 0.45);
+  transition:
+    translate 1.15s 1s cubic-bezier(0.2, 0.75, 0.25, 1),
+    rotate 1.15s 1s cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+.e-pic-a {
+  left: 48px;
+  rotate: -4deg;
+}
+.e-pic-b {
+  right: 48px;
+  rotate: 4deg;
+}
+.gate.go .e-pic-a {
+  translate: -24px -106px;
+  rotate: -14deg;
+}
+.gate.go .e-pic-b {
+  translate: 24px -114px;
+  rotate: 13deg;
+}
+
+.e-note {
+  position: absolute;
+  left: 50%;
+  top: 82px;
+  width: 114px;
+  margin-left: -57px;
+  padding: 10px 6px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 2px;
-  transition: transform 1.05s 1.05s cubic-bezier(0.32, 0, 0.2, 1);
-}
-/* the engraved rule the card carries, same device as .card-body */
-.e-card-rule {
-  position: absolute;
-  inset: 9px;
+  gap: 1px;
+  background: var(--white);
   border: 1px solid var(--line);
-  pointer-events: none;
+  box-shadow: 0 12px 22px -10px rgba(46, 42, 38, 0.42);
+  transition: translate 1.15s 1.12s cubic-bezier(0.2, 0.75, 0.25, 1);
 }
-.gate.go .e-card {
-  transform: translateY(-176px);
+.e-note b {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  color: var(--muted);
 }
-
-/* The shadow the closed flap throws onto the paper below it. It is what makes
-   the flap sit *on* the envelope rather than beside it, so it lifts away as
-   the flap does. */
-.e-liner {
-  position: absolute;
-  inset-inline: 0;
-  top: 0;
-  z-index: 5;
-  height: 138px;
-  pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    rgba(46, 42, 38, 0.15),
-    rgba(46, 42, 38, 0.05) 55%,
-    rgba(46, 42, 38, 0)
-  );
-  transition: opacity 0.75s 0.45s;
+.e-note i {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--ink);
 }
-.gate.go .e-liner {
-  opacity: 0;
+.gate.go .e-note {
+  translate: 0 -74px;
 }
 
 .e-front {
   position: absolute;
   inset: 0;
-  z-index: 4;
-  background: var(--white);
+  z-index: 5;
+  background-color: var(--white);
   border: 1px solid var(--line);
   /* a full rectangle with a V notched out of the top; the notch bottoms at
-     58% and the flap reaches 62%, so the card is never visible through it */
+     58% and the flap reaches 61%, so nothing inside shows through it while
+     the envelope is sealed */
   clip-path: polygon(0% 0%, 50% 58%, 100% 0%, 100% 100%, 0% 100%);
   transition: opacity 0.5s 1.85s;
 }
@@ -562,27 +721,40 @@ body {
 
 .e-flap {
   position: absolute;
-  inset-inline-start: 0;
+  left: 0;
   top: 0;
   z-index: 6;
   width: 100%;
-  height: 118px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--nude-deep) 88%, var(--taupe)),
-    var(--nude-deep) 70%,
-    color-mix(in srgb, var(--nude-deep) 84%, var(--white))
-  );
+  height: 122px;
+  background-color: var(--nude-deep);
   border: 1px solid var(--line);
   clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
   transform-origin: top center;
 }
+/* the fold's own shading, over the paper texture */
+.e-flap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--taupe) 26%, transparent),
+    transparent 62%,
+    color-mix(in srgb, var(--white) 34%, transparent)
+  );
+}
 .gate.go .e-flap {
   animation: flapOpen 0.95s 0.38s cubic-bezier(0.55, 0, 0.15, 1) forwards;
 }
+/* The z-index flip at the halfway point is what sends the flap behind the
+   envelope rather than through it. It fades over the back half of the swing:
+   left solid, a flipped flap stands up behind the envelope as a slab of paper
+   that is in none of the reference's open frames, and it crowds the
+   photographs coming out. */
 @keyframes flapOpen {
   0% {
     transform: rotateX(0);
+    opacity: 1;
   }
   49% {
     z-index: 6;
@@ -590,26 +762,36 @@ body {
   50% {
     z-index: 1;
   }
+  58% {
+    opacity: 1;
+  }
   100% {
     transform: rotateX(-176deg);
+    opacity: 0;
     z-index: 1;
   }
 }
 
-/* The seal: real wax, toned to the palette at build time. */
+/* The seal: real wax, toned to the palette at build time.
+
+   Physical `left`, not `inset-inline-start`: the -50% pull-back is a transform
+   and transforms do not mirror under RTL, so a logical offset here would put
+   the wax half an envelope off centre and every state would need a
+   [dir="rtl"] twin to undo it. The seal stays where it is through the whole
+   opening, the way the wax on a real envelope stays with the front. */
 .seal-mark {
   position: absolute;
-  inset-inline-start: 50%;
-  top: 104px;
+  left: 50%;
+  top: 108px;
   z-index: 7;
   display: block;
   width: 62px;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  filter: drop-shadow(0 4px 10px rgba(59, 48, 42, 0.32));
+  filter: drop-shadow(0 5px 12px rgba(59, 48, 42, 0.34));
   transition:
     transform 0.62s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.55s;
+    opacity 0.55s 1.85s;
 }
 .seal-mark img {
   display: block;
@@ -625,15 +807,18 @@ body {
 .env::after {
   content: "";
   position: absolute;
-  inset: -8%;
+  /* Flush to the paper, not past it. Bled outwards the highlight carries on
+     over bare ground either side of the envelope, where there is nothing to
+     catch light, and it reads as a pale slab rather than a sheen. */
+  inset: 0;
   z-index: 8;
   pointer-events: none;
   background: linear-gradient(
     100deg,
     rgba(255, 255, 255, 0) 43%,
-    rgba(255, 255, 255, 0.4) 48.5%,
-    rgba(255, 255, 255, 0.72) 50%,
-    rgba(255, 255, 255, 0.4) 51.5%,
+    rgba(255, 255, 255, 0.3) 48.5%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0.3) 51.5%,
     rgba(255, 255, 255, 0) 57%
   );
   background-size: 300% 100%;
@@ -652,27 +837,16 @@ body {
 .gate.go .env::after {
   opacity: 0;
 }
-/* the start-50% offset flips sign under RTL */
-[dir="rtl"] .seal-mark {
-  transform: translate(50%, -50%);
-}
 .env:hover .seal-mark {
   transform: translate(-50%, -50%) scale(1.06);
 }
-[dir="rtl"] .env:hover .seal-mark {
-  transform: translate(50%, -50%) scale(1.06);
-}
 .gate.go .seal-mark {
-  transform: translate(-50%, -190%) rotate(-14deg) scale(1.1);
-  opacity: 0;
-}
-[dir="rtl"] .gate.go .seal-mark {
-  transform: translate(50%, -190%) rotate(-14deg) scale(1.1);
   opacity: 0;
 }
 
 .gate.go .e-front,
-.gate.go .e-back {
+.gate.go .e-back,
+.gate.go .e-liner {
   opacity: 0;
   transition: opacity 0.5s 1.85s;
 }
@@ -854,9 +1028,30 @@ body {
   .env::after {
     display: none;
   }
-  .gate.go .e-card,
-  .gate.go .seal-mark {
+  /* No choreography, but the envelope must still end up open: the contents
+     are simply already out of it and the flap already back. */
+  .env,
+  .env:hover,
+  .gate.go .env {
     transform: none;
+  }
+  .gate.go .e-pic-a,
+  .gate.go .e-pic-b,
+  .gate.go .e-note,
+  .gate.go .e-bloom img {
+    translate: 0 -80px;
+  }
+  .gate.go .e-pic-a {
+    rotate: -14deg;
+  }
+  .gate.go .e-pic-b {
+    rotate: 13deg;
+  }
+  .gate.go .e-bloom img {
+    opacity: 0.95;
+  }
+  .gate.go .seal-mark {
+    transform: translate(-50%, -50%);
   }
   .gate.go .scene {
     animation: none;

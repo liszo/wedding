@@ -34,11 +34,17 @@ npm run assets
 > it goes through a luminance curve with alpha passed through, which keeps the wax
 > three-dimensional.
 >
-> `florals/`, `icons/`, `persian/`, the rest of `ornaments/` and `seals/`, and
-> `vector-source/` are kept as a complete archive. They were used by two earlier
-> directions (ivory tazhib, then botanical olive) which are in the git history. Nothing
-> references them at runtime; the catalogue below stands so they are usable again
-> without re-deriving what each file is.
+> Two files from `florals/` also ship, and only into the envelope gate:
+> `rose-sheet.png` is its lining and `rose-cascade.png` rises out of the pocket. Both
+> are desaturated on the way through — at full strength their greens fight a nude
+> palette. The invitation itself stays floral-free; an envelope's lining is by
+> definition something you only see once it opens.
+>
+> The rest of `florals/`, plus `icons/`, `persian/`, the rest of `ornaments/` and
+> `seals/`, and `vector-source/`, are kept as a complete archive. They were used by two
+> earlier directions (ivory tazhib, then botanical olive) which are in the git history.
+> Nothing references them at runtime; the catalogue below stands so they are usable
+> again without re-deriving what each file is.
 
 `scripts/prepare-assets.ts` crops every photograph, compresses it to WebP at two sizes,
 shrinks the six reaction stickers (1MB of PNG → 88KB of WebP), and writes
