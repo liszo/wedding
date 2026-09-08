@@ -87,8 +87,8 @@ everything else is kept because it may be wanted again.
 |---|---|---|---|
 | `new-hero.webp` | 1426×2016 | `hero` | **The hero**, full-bleed and uncropped, and the **only** treated photograph — black and white. Couple centre-right, a phone in the foreground, and empty wall panelling top-left; that corner is where the names sit, so do not crop it away. |
 | `bale-boron.jpg` | 800×600 | `baleBoron` | The بله‌برون chapter. (`bale-boron.webp` is a leftover copy of the hero and is no longer referenced.) |
-| `story-1.jpg` | 860×1150 | `proposal` | The خواستگاری chapter. Couple with the orange-peach bouquet, Persian miniature behind. |
-| `khonche.jpg` | 1920×2560 | `khoncheBg` | **Not in the gallery.** Sits behind the روزشمار band, blurred and washed back — cream velvet trays, pearls and satin flowers, already light and low-contrast, which is why it works there. |
+| `khastegari.webp` | 750×1000 | `proposal` | The خواستگاری chapter. Couple in the hallway, orange-peach bouquet, mirror and lamps behind. (`story-1.jpg` held this slot before and is no longer referenced.) |
+| `khonche.jpg` | 1920×2560 | `khoncheBg` | **Not in the gallery.** Sits behind the روزشمار band. It is not veiled — a floor colour is blended under it with `lighten`, so its shadows flatten to a guaranteed minimum and its highlights come through untouched. See the note in `globals.css`. |
 | `gallery1.jpg` | 600×800 | `gallery1` | Proposal evening — bouquet, Turkish lamps, hallway. |
 | `gallery2.jpg` | 800×633 | `gallery2` | Seated on the sofreh, wide, both faces to camera. |
 | `gallery3.jpg` | 785×800 | `gallery3` | Seated, looking at each other, chandelier overhead. |

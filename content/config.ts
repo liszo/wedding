@@ -50,7 +50,7 @@ export const wedding = {
       note: "همراه موسیقی و رقص",
     },
     { at: "۲۲:۰۰", title: "سرو شام", note: "" },
-    { at: "۲۳:۳۰", title: "بدرقه", note: "" },
+    { at: "۲۴:۰۰", title: "بدرقه", note: "" },
   ],
 
   uploadCap: 20,

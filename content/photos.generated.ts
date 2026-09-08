@@ -32,10 +32,10 @@ export const photos = {
   },
   "proposal": {
     "src": "/design/photos/proposal.webp",
-    "w": 748,
+    "w": 750,
     "h": 1000,
     "thumb": "/design/photos/proposal-t.webp",
-    "tw": 479,
+    "tw": 480,
     "th": 640,
     "alt": "شقایق و رامین در شب خواستگاری"
   },

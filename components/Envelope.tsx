@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "motion/react";
 import { wedding, coupleNames } from "@/content/config";
+import { ORNAMENT } from "@/components/ui";
 import * as music from "@/lib/music";
 
 const SEEN = "wg-envelope-opened";
@@ -50,7 +51,12 @@ export default function Envelope({ guestName }: { guestName?: string }) {
     music.getChoice,
     music.getServerChoice
   );
+  // Two states, not one. `go` starts the choreography; `open` fades the whole
+  // layer out. They cannot be set together: the fade is 0.9s and the
+  // choreography is 2.35s, so a single flag would dissolve the envelope while
+  // the flap was still swinging and nobody would ever see the card come out.
   const [going, setGoing] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const seal = useRef<HTMLButtonElement>(null);
   const reduce = useReducedMotion();
 
@@ -72,8 +78,11 @@ export default function Envelope({ guestName }: { guestName?: string }) {
     if (going) return;
     setGoing(true);
 
+    // the bloom starts at 2s; the fade rides the back half of it
+    window.setTimeout(() => setLeaving(true), reduce ? 100 : 2000);
+
     // let the flap and bloom play out before the layer is removed
-    const wait = reduce ? 250 : 2350;
+    const wait = reduce ? 350 : 2950;
     window.setTimeout(() => {
       openedInMemory = true;
       try {
@@ -89,7 +98,7 @@ export default function Envelope({ guestName }: { guestName?: string }) {
 
   return (
     <div
-      className={`gate${going ? " go open" : ""}`}
+      className={`gate${going ? " go" : ""}${leaving ? " open" : ""}`}
       role="dialog"
       aria-modal="true"
       aria-label="دعوت‌نامه"
@@ -97,12 +106,28 @@ export default function Envelope({ guestName }: { guestName?: string }) {
         if (e.key === "Escape") unseal();
       }}
     >
+      {/* the ruled border and corner marks of a printed card */}
+      <span aria-hidden className="g-frame">
+        <i />
+        <i />
+        <i />
+        <i />
+      </span>
+
       <div className="g-head">
         {guestName && <p className="label mb-4">{guestName} عزیز</p>}
         <p className="text-[12.5px] leading-[2] text-muted">
           شما دعوت شدید به مراسم عروسی
         </p>
         <p className="nastaliq mt-1 text-[32px] text-ink">{coupleNames}</p>
+        <img
+          src={ORNAMENT.rule}
+          alt=""
+          aria-hidden
+          width={118}
+          height={14}
+          className="mx-auto mt-3 w-[118px]"
+        />
       </div>
 
       <div className="scene">
@@ -112,15 +137,27 @@ export default function Envelope({ guestName }: { guestName?: string }) {
           onClick={unseal}
           aria-label="گشودن دعوت‌نامه"
         >
+          {/* the pocket, seen from the back: the shell, then the lined throat
+              the flap uncovers, then the card, then the three fold panels */}
           <span className="e-back" />
+          <span className="e-liner" />
+
           <span className="e-card">
+            <span className="e-card-rule" />
             <span className="nastaliq text-[23px] text-ink">{coupleNames}</span>
             <span className="text-[10px] tracking-[0.28em] text-muted">
               {wedding.dateFa}
             </span>
           </span>
-          <span className="e-front" />
+
+          <span className="e-front">
+            <i className="p-l" />
+            <i className="p-r" />
+            <i className="p-b" />
+          </span>
+
           <span className="e-flap" />
+
           <span className="seal-mark">
             <img
               src="/design/seals/wax-heart.webp"
@@ -134,6 +171,7 @@ export default function Envelope({ guestName }: { guestName?: string }) {
       </div>
 
       <p className="g-foot text-[11.5px] tracking-[0.16em] text-muted">
+        <span aria-hidden className="g-tap" />
         برای گشودن، لمس کنید
       </p>
     </div>

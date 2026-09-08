@@ -20,6 +20,20 @@ const SET: Photo[] = [
   photos.gallery5,
 ];
 
+/**
+ * Which frame goes in which column, as indices into SET. Split so the two
+ * columns come out close in height at the rendered width (~146px each):
+ * the tall pair are separated and the two landscapes are separated.
+ * The first column is the right-hand one — the page is RTL.
+ */
+const COLUMNS: number[][] = [
+  [0, 2, 4],
+  [1, 3],
+];
+
+/** The shorter column, where the closing tile stretches to make up the height. */
+const FILLER_COLUMN = 1;
+
 /** Chevrons as SVG, not « » — those characters are bidi-mirrored, so in an
  *  RTL document the glyphs render pointing the opposite way and the two
  *  buttons look swapped. A path cannot be mirrored by the bidi algorithm. */
@@ -164,31 +178,65 @@ export default function Gallery() {
         className="mb-10"
       />
 
-      <div className="mx-auto max-w-[300px] columns-2 gap-2">
-        {SET.map((p, i) => (
-          <motion.button
-            key={p.src}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6, delay: (i % 2) * 0.08 }}
-            onClick={(e) => {
-              opener.current = e.currentTarget;
-              setAt(i);
-            }}
-            aria-label={`بزرگ‌کردن عکس ${toFa(i + 1)}`}
-            className="mb-2 block w-full break-inside-avoid transition hover:opacity-85"
-          >
-            <img
-              src={p.thumb}
-              width={p.tw}
-              height={p.th}
-              alt={p.alt}
-              loading="lazy"
-              decoding="async"
-              className="block w-full rounded-[6px] object-cover"
-            />
-          </motion.button>
+      {/* Two hand-balanced columns rather than `columns-2` masonry.
+          The five frames are a mix of portrait, square and landscape, so a
+          uniform grid cell would have to crop two of them badly; here each
+          keeps its own shape. Masonry's problem was that the columns ended at
+          different heights and left a hole — COLUMNS splits them so the
+          difference is small, and the closing tile takes `flex-1` to absorb
+          whatever is left. Both columns finish flush at any width. */}
+      <div className="mx-auto flex max-w-[300px] gap-2">
+        {COLUMNS.map((column, ci) => (
+          <div key={ci} className="flex flex-1 flex-col gap-2">
+            {column.map((i) => {
+              const p = SET[i];
+              return (
+                <motion.button
+                  key={p.src}
+                  data-reveal
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.6, delay: ci * 0.08 }}
+                  onClick={(e) => {
+                    opener.current = e.currentTarget;
+                    setAt(i);
+                  }}
+                  aria-label={`بزرگ‌کردن عکس ${toFa(i + 1)}`}
+                  className="block w-full transition hover:opacity-85"
+                >
+                  <img
+                    src={p.thumb}
+                    width={p.tw}
+                    height={p.th}
+                    alt={p.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="block w-full rounded-[6px]"
+                  />
+                </motion.button>
+              );
+            })}
+
+            {/* the frame that has not been taken yet */}
+            {ci === FILLER_COLUMN && (
+              <motion.div
+                data-reveal
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: 0.08 }}
+                className="flex min-h-[104px] flex-1 flex-col items-center justify-center gap-3 rounded-[6px] border border-line bg-white px-3 text-center"
+              >
+                <span aria-hidden className="soon-diamond" />
+                <span className="text-[11px] leading-[1.9] text-muted">
+                  قاب‌های بعدی،
+                  <br />
+                  شبِ عروسی
+                </span>
+              </motion.div>
+            )}
+          </div>
         ))}
       </div>
 

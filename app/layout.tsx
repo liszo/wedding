@@ -63,6 +63,15 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="fa" dir="rtl" className="h-full antialiased">
+      <head>
+        {/* Every section rises into view on scroll, which means its markup is
+            served at opacity 0 and Motion animates it up. Without JS nothing
+            would ever run that animation and the invitation would be a blank
+            card — so with no JS the sections are simply already there. */}
+        <noscript>
+          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
+      </head>
       <body className="min-h-full">
         <a
           href="#story"

@@ -1,14 +1,14 @@
 "use client";
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { wedding, coupleNames } from "@/content/config";
+import { wedding } from "@/content/config";
 import { photos } from "@/content/photos.generated";
 
 /**
  * Full bleed, at the photograph's own 1426:2016. The couple sits centre-right
  * and the top-left is empty wall, so the names go there — in ink, not white on
- * a scrim. The duotone lifts highlights to #FAF7F3, which gives dark type on
- * that wall roughly 12:1; a scrim would only muddy it.
+ * a scrim. The frame is black and white with a contrast lift baked in, which
+ * keeps that wall bright enough for dark type; a scrim would only muddy it.
  *
  * Everything here is anchored `left`, not `start`. The page is RTL, so a
  * logical property would put the block in the opposite corner.
@@ -49,6 +49,7 @@ export default function Hero() {
 
       <div className="absolute top-0 left-0 z-2 p-7 text-left sm:p-9">
         <motion.p
+          data-reveal
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.45, duration: 1 }}
@@ -58,18 +59,22 @@ export default function Hero() {
         </motion.p>
 
         <motion.h1
+          data-reveal
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className="nastaliq text-[34px] leading-[1.75] text-ink sm:text-[38px]"
+          className="nastaliq text-[34px] leading-[1.5] text-ink sm:text-[38px]"
         >
-          {wedding.brideName}
-          <br />
-          {wedding.groomName}
+          <span className="block">{wedding.brideName}</span>
+          {/* the conjunction, set small and set back — it joins the two names
+              without competing with them */}
+          <span className="block text-[0.6em] leading-[1.15] text-muted">و</span>
+          <span className="block">{wedding.groomName}</span>
         </motion.h1>
 
         <motion.div
           aria-hidden
+          data-reveal
           initial={{ opacity: 0, scaleX: 0 }}
           animate={{ opacity: 1, scaleX: 1 }}
           transition={{ delay: 0.75, duration: 0.9 }}
@@ -77,6 +82,7 @@ export default function Hero() {
         />
 
         <motion.p
+          data-reveal
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9, duration: 1 }}
@@ -85,8 +91,6 @@ export default function Hero() {
           {wedding.weekdayFa} {wedding.dateFa}
         </motion.p>
       </div>
-
-      <span className="sr-only">{coupleNames}</span>
     </section>
   );
 }

@@ -5,6 +5,7 @@
  * cutouts. This one divides them with whitespace, a low-contrast ground
  * change, and one hairline — so everything here is CSS.
  */
+import Reveal from "./Reveal";
 
 /**
  * The only two ornaments the site serves, re-tinted from their gold masters to
@@ -61,6 +62,10 @@ export function Band({
 /**
  * label → nastaliq title → hairline. `label` is optional: the story section
  * runs without one.
+ *
+ * The reveal lives here rather than at the call sites: every section on the
+ * page opens with one of these, so putting it inside is what makes the whole
+ * page rise into view consistently.
  */
 export function SectionHead({
   label,
@@ -74,7 +79,7 @@ export function SectionHead({
   className?: string;
 }) {
   return (
-    <div className={`text-center ${className}`}>
+    <Reveal className={`text-center ${className}`}>
       {label && <p className="label">{label}</p>}
       <h2 id={id} className="nastaliq mt-1 text-[27px] text-ink">
         {title}
@@ -88,7 +93,7 @@ export function SectionHead({
         decoding="async"
         className="mx-auto mt-3 w-[132px]"
       />
-    </div>
+    </Reveal>
   );
 }
 

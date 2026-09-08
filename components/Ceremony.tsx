@@ -13,7 +13,7 @@ export default function Ceremony() {
         className="mb-9"
       />
 
-      <Reveal>
+      <Reveal delay={0.05}>
         <div className="mx-auto max-w-[300px] text-center">
           <h3 className="nastaliq text-[22px] text-ink">{wedding.venue.name}</h3>
           <p className="mt-1 text-[13px] leading-[2] text-muted">

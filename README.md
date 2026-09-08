@@ -46,7 +46,7 @@ against both grounds. `--taupe` and `--line` are hairlines and are never used fo
 | `<SectionHead>` | optional label → nastaliq title → ornament rule |
 | `<Rule>` | a 46px centred hairline, between blocks of one section |
 | `<Seam tone>` | the division between two bands; carries the ground of the band above it |
-| `.loading-bar` | the عروسی chapter's crawl — see below |
+| `.soon` | the عروسی chapter's unfinished mark — see below |
 
 The content
 column (roughly 300px inside a 430px card) is much narrower than the card itself; those
@@ -56,16 +56,36 @@ wide margins are most of what makes it read as printed rather than as a web page
 and white — stripped at build time rather than with a CSS filter, so the browser never
 paints the colour version first.
 
-**A photograph can sit behind a band.** `<Band photo={...}>` lays the image down blurred
-and scaled (the scale hides the transparent fringe blur leaves at the edges) under a nude
-wash. The wash alone is not enough: over the darkest part of the composite `--muted`
-measures 3.7:1, under AA. `.band-on-photo` rebinds that one token to a darker value, which
-darkens every `text-muted` inside the band at once without any component knowing — `@theme
-inline` compiles the utility to `color: var(--muted)`, so the override just cascades.
+**A photograph can sit behind a band.** `<Band photo={...}>` puts the khonche behind
+روزشمار. Veiling it under a wash thick enough to guarantee legibility is what made it
+invisible in the first place, so instead a floor colour is blended under the picture with
+`background-blend-mode: lighten`: the blend takes the per-channel maximum, so the shadows
+flatten into the floor and no pixel of the composite can be darker than it, while the
+highlights come through untouched. Blur only averages, so it cannot break the floor
+either. Measured on the real composite — photograph, floor, wash and paper grain — the
+darkest pixel in the content column is `rgb(203,197,190)`; `.band-on-photo` then rebinds
+`--muted` and `--umber` darker so the secondary text lands at 5.6:1 rather than 3.2:1.
+Rebinding rather than restyling means no component inside knows it is over a picture:
+`@theme inline` compiles the utility to `color: var(--muted)`, so the override cascades.
 
 **The wedding chapter never finishes loading.** It has no photograph and no text because
-it has not happened yet, so it renders a crawling progress bar and «به‌زودی…» whose dots
-never resolve.
+it has not happened yet, so `.soon` renders a rail with a light travelling along it, a
+diamond riding the light, and «به‌زودی…» catching a shimmer as the light passes. Nothing
+ever completes. The ride animates the `translate` property rather than
+`transform: translateX()` — the diamond carries `rotate: 45deg`, and since the individual
+transform properties compose translate → rotate → scale → transform, a translation in
+`transform` would be applied in the rotated frame and send it down the diagonal.
+
+**The gallery is two hand-balanced columns, not masonry.** The five frames are a mix of
+portrait, square and landscape, so a uniform grid cell would have to crop two of them
+badly. `COLUMNS` in `Gallery.tsx` splits them so the two columns come out close in height,
+and the closing tile — the frame that has not been taken yet — takes `flex-1` to absorb
+whatever difference is left, so both columns always finish flush.
+
+**Every section rises into view.** `<Reveal>` is inside `<SectionHead>`, so each section
+opens with the same fade-and-rise without any call site asking for it. That means the
+markup ships at `opacity: 0`, so `app/layout.tsx` carries a `<noscript>` rule that cancels
+the starting state — otherwise a guest with scripting off would get a blank card.
 
 The hero anchors its type with `left`, not `start`. The page is RTL, so the logical
 property would put the names in the opposite corner from the empty wall they are meant
@@ -87,9 +107,14 @@ Two overlays, in order, both session-scoped so they appear once per visit:
    `<audio>` element in a module-level store and the gate calls `choose("yes")` straight
    from its own click handler, while that gesture still counts. The 4.7MB track is
    `preload="none"` until someone says yes.
-2. **`<Envelope>`** — the sealed gate, drawn in CSS: a paper envelope whose flap swings
-   back in 3D, sealed with a hairline ring holding the two initials. It waits for a
-   music answer before rendering, so the two never stack or fight over focus.
+2. **`<Envelope>`** — the sealed gate. Everything but the wax is drawn in CSS: the pocket
+   front is a rectangle with a V notched out of the top, the three fold panels inside it
+   are tinted a few percent apart with the two lower diagonals of an envelope's X as
+   their seams, a gradient stands in for the shadow the closed flap throws, and a slow
+   highlight crosses the paper and the wax once every few seconds. The flap swings back
+   in 3D and the card slides up out of the pocket. The gate itself carries the same
+   double rule and corner diamonds as a printed card. It waits for a music answer before
+   rendering, so the two never stack or fight over focus.
 
 ## Guest flow
 

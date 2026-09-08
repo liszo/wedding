@@ -144,11 +144,15 @@ body {
 }
 
 /* A photograph behind a band.
-   Two layers, because one is not enough to guarantee legibility: the image is
-   blurred and scaled (the scale hides the transparent fringe blur leaves at
-   the edges), then a nude wash sits on top of it. The wash is what keeps the
-   contrast ratios in this band the same as everywhere else — without it the
-   secondary text drops to ~3.4:1 over the darker parts of the picture. */
+
+   The picture has to stay *visible* — it is a khonche, and the point of it is
+   that you can read the fabric and the mirror. So it is only lightly blurred
+   and the wash over it is thin. What keeps the text legible instead is the
+   filter: the image is lifted and desaturated before the wash goes on, which
+   raises its floor without flattening it. Blur alone would not do that —
+   blurring a dark region only spreads the darkness.
+
+   The scale hides the transparent fringe blur leaves at the edges. */
 .band-photo,
 .band-photo-wash {
   position: absolute;
@@ -162,22 +166,38 @@ body {
 .band-photo {
   background-position: center;
   background-size: cover;
-  filter: blur(5px);
-  transform: scale(1.09);
-  opacity: 0.85;
+  /* The floor. `lighten` takes the per-channel maximum of the photograph and
+     this colour, so no pixel of the composite can ever be darker than it —
+     the shadows flatten into it and the highlights come through untouched.
+     A wash cannot do this: veiling the picture enough to guarantee the floor
+     is what made it invisible. Blur only averages, so it cannot break the
+     floor either. */
+  background-color: #c3b9ae;
+  background-blend-mode: lighten;
+  filter: blur(2.5px) saturate(0.5);
+  transform: scale(1.06);
 }
 .band-photo-wash {
   background: var(--nude);
-  opacity: 0.87;
+  opacity: 0.34;
 }
 
-/* Over the darkest part of the composited backdrop, --muted measures 3.71:1 —
-   under AA. Rebinding the token here darkens every `text-muted` inside the
-   band at once, with no component aware of it: `@theme inline` compiles the
-   utility to `color: var(--muted)`, so the override simply cascades.
-   #5A5048 measures 5.3:1 on the backdrop and 6.8:1 on plain nude. */
+/* The floor still sits well below plain nude, so the lighter tokens are
+   rebound for this band. Rebinding rather than restyling means no component
+   here knows it is over a picture: `@theme inline` compiles the utilities to
+   `color: var(--muted)`, so the override simply cascades into every
+   `text-muted` and every `border-line` inside.
+
+   Measured by compositing the real photograph, floor, wash and paper grain and
+   taking the darkest pixel in the content column — rgb(203,197,190):
+     --ink    unchanged  8.3:1
+     --umber  #3E362F    6.9:1
+     --muted  #4C443C    5.6:1   (the default #74675B would be 3.2:1) */
 .band-on-photo {
-  --muted: #5a5048;
+  --muted: #4c443c;
+  --umber: #3e362f;
+  --line: #cfc2b5;
+  --taupe: #a8968a;
 }
 
 /* --- type ---------------------------------------------------------------- */
@@ -276,12 +296,22 @@ body {
 }
 
 /* --- the gate ------------------------------------------------------------
-   A sealed envelope, drawn entirely in CSS. The choreography:
+   A sealed envelope, drawn entirely in CSS — no envelope image anywhere.
+
+   The construction is a real one. `.e-front` is the pocket front with a V
+   notched out of the top; inside it the three fold panels (`.p-l`, `.p-r`,
+   `.p-b`) are tinted a few percent apart and their seams are the two lower
+   diagonals of the X an envelope carries. `.e-liner` is the shadow the closed
+   flap throws down the paper, which is what gives the thing depth. The seal is
+   real wax pressed over two ribbon tails.
+
+   The choreography:
      0.38s  the flap swings back
      1.05s  the card slides up out of the pocket
      1.85s  the paper fades
-     2.00s  the scene blooms past the viewport
-   The component only toggles .go and .open.
+     2.00s  the scene blooms past the viewport, and the layer starts to fade
+   The component toggles .go at the start and .open at 2s — never together,
+   or the 0.9s fade would dissolve the envelope before any of this is seen.
 -------------------------------------------------------------------------- */
 
 .gate {
@@ -296,8 +326,8 @@ body {
   padding: 32px;
   overflow: hidden;
   transition:
-    opacity 1.1s ease,
-    visibility 1.1s;
+    opacity 0.9s ease,
+    visibility 0.9s;
 }
 .gate::before {
   content: "";
@@ -312,11 +342,78 @@ body {
   visibility: hidden;
 }
 
+/* The gate is a card too: a double rule inset from the edge, pinned at the
+   corners by the same small diamond the seams use. The diamonds are painted
+   in the gate's own ground so the rule reads as interrupted by them. */
+.g-frame {
+  position: absolute;
+  inset: 20px;
+  z-index: 2;
+  border: 1px solid var(--line);
+  pointer-events: none;
+  transition: opacity 0.6s;
+}
+.g-frame::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+}
+.g-frame i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  rotate: 45deg;
+  background: var(--nude);
+  border: 1px solid var(--taupe);
+}
+.g-frame i:nth-child(1) {
+  top: -4px;
+  left: -4px;
+}
+.g-frame i:nth-child(2) {
+  top: -4px;
+  right: -4px;
+}
+.g-frame i:nth-child(3) {
+  bottom: -4px;
+  left: -4px;
+}
+.g-frame i:nth-child(4) {
+  bottom: -4px;
+  right: -4px;
+}
+.gate.go .g-frame {
+  opacity: 0;
+}
+
 .g-head,
 .g-foot {
   position: relative;
   z-index: 3;
   text-align: center;
+}
+
+/* a small diamond breathing above the invitation to touch */
+.g-tap {
+  display: block;
+  width: 5px;
+  height: 5px;
+  margin: 0 auto 13px;
+  rotate: 45deg;
+  background: var(--taupe);
+  animation: tapPulse 2.4s ease-in-out infinite;
+}
+@keyframes tapPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    scale: 1;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.4;
+  }
 }
 .g-head {
   margin-bottom: 34px;
@@ -335,8 +432,8 @@ body {
   position: relative;
   z-index: 3;
   perspective: 1100px;
-  width: 276px;
-  height: 188px;
+  width: 282px;
+  height: 192px;
 }
 .env {
   position: relative;
@@ -360,15 +457,17 @@ body {
   z-index: 1;
   background: var(--white);
   border: 1px solid var(--line);
-  box-shadow: 0 24px 50px -20px rgba(46, 42, 38, 0.28);
+  box-shadow:
+    0 2px 0 0 color-mix(in srgb, var(--line) 70%, transparent),
+    0 28px 56px -22px rgba(46, 42, 38, 0.34);
 }
 .e-card {
   position: absolute;
-  inset-inline-start: 10px;
+  inset-inline-start: 11px;
   top: 11px;
-  z-index: 2;
-  width: 256px;
-  height: 166px;
+  z-index: 3;
+  width: 260px;
+  height: 170px;
   background: var(--white);
   border: 1px solid var(--line);
   display: flex;
@@ -378,8 +477,37 @@ body {
   gap: 2px;
   transition: transform 1.05s 1.05s cubic-bezier(0.32, 0, 0.2, 1);
 }
+/* the engraved rule the card carries, same device as .card-body */
+.e-card-rule {
+  position: absolute;
+  inset: 9px;
+  border: 1px solid var(--line);
+  pointer-events: none;
+}
 .gate.go .e-card {
-  transform: translateY(-172px);
+  transform: translateY(-176px);
+}
+
+/* The shadow the closed flap throws onto the paper below it. It is what makes
+   the flap sit *on* the envelope rather than beside it, so it lifts away as
+   the flap does. */
+.e-liner {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 5;
+  height: 138px;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(46, 42, 38, 0.15),
+    rgba(46, 42, 38, 0.05) 55%,
+    rgba(46, 42, 38, 0)
+  );
+  transition: opacity 0.75s 0.45s;
+}
+.gate.go .e-liner {
+  opacity: 0;
 }
 
 .e-front {
@@ -393,6 +521,45 @@ body {
   clip-path: polygon(0% 0%, 50% 58%, 100% 0%, 100% 100%, 0% 100%);
   transition: opacity 0.5s 1.85s;
 }
+/* The three folded panels. Each is a few percent darker than the shell, which
+   is all it takes for the folds to read; the parent's V clip trims whatever
+   would sit above the notch. */
+.e-front i {
+  position: absolute;
+  inset: 0;
+}
+.p-l {
+  clip-path: polygon(0 0, 50% 50%, 0 100%);
+  background: rgba(46, 42, 38, 0.03);
+}
+.p-r {
+  clip-path: polygon(100% 0, 50% 50%, 100% 100%);
+  background: rgba(46, 42, 38, 0.03);
+}
+.p-b {
+  clip-path: polygon(0 100%, 50% 50%, 100% 100%);
+  background: rgba(46, 42, 38, 0.058);
+}
+/* the seams themselves — the two lower diagonals of the envelope's X */
+.e-front::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background:
+    linear-gradient(
+      to top right,
+      transparent calc(50% - 0.5px),
+      color-mix(in srgb, var(--taupe) 62%, transparent) 50%,
+      transparent calc(50% + 0.5px)
+    ),
+    linear-gradient(
+      to top left,
+      transparent calc(50% - 0.5px),
+      color-mix(in srgb, var(--taupe) 62%, transparent) 50%,
+      transparent calc(50% + 0.5px)
+    );
+}
+
 .e-flap {
   position: absolute;
   inset-inline-start: 0;
@@ -400,7 +567,12 @@ body {
   z-index: 6;
   width: 100%;
   height: 118px;
-  background: var(--nude-deep);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--nude-deep) 88%, var(--taupe)),
+    var(--nude-deep) 70%,
+    color-mix(in srgb, var(--nude-deep) 84%, var(--white))
+  );
   border: 1px solid var(--line);
   clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
   transform-origin: top center;
@@ -442,6 +614,43 @@ body {
 .seal-mark img {
   display: block;
   width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+/* A single slow highlight crossing the paper and the wax, then resting. It
+   sits above everything in the scene, which is the point — the wax catching
+   the light is the half worth seeing — and it lifts away the moment the
+   envelope starts to open. */
+.env::after {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  z-index: 8;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 43%,
+    rgba(255, 255, 255, 0.4) 48.5%,
+    rgba(255, 255, 255, 0.72) 50%,
+    rgba(255, 255, 255, 0.4) 51.5%,
+    rgba(255, 255, 255, 0) 57%
+  );
+  background-size: 300% 100%;
+  animation: sheen 6.5s cubic-bezier(0.45, 0, 0.35, 1) infinite;
+  transition: opacity 0.4s;
+}
+@keyframes sheen {
+  0% {
+    background-position: 175% 0;
+  }
+  36%,
+  100% {
+    background-position: -75% 0;
+  }
+}
+.gate.go .env::after {
+  opacity: 0;
 }
 /* the start-50% offset flips sign under RTL */
 [dir="rtl"] .seal-mark {
@@ -479,32 +688,121 @@ body {
 
 /* --- the unfinished chapter ---------------------------------------------- */
 
-/* The wedding has not happened, so its chapter never finishes loading. The
-   bar fills and resets forever; the dots never resolve. */
-.loading-bar {
+/* The wedding has not happened, so its chapter never finishes loading — but a
+   progress bar is the language of a website, not of an invitation. This is a
+   rail with a light travelling it, a diamond riding the light, and the word
+   itself catching a shimmer as the light passes. Nothing ever completes.
+
+   Every layer runs on the same 3.6s clock so the shimmer crosses the word at
+   the moment the diamond crosses the rail. All physical (`left`, `translateX`)
+   rather than logical: the animation is a pendulum, so it is symmetric, and
+   flipping it under RTL would only desynchronise it from the shimmer. */
+.soon {
   position: relative;
-  width: 132px;
-  height: 1px;
+  width: 168px;
+  height: 9px;
   margin-inline: auto;
-  overflow: hidden;
-  background: var(--line);
 }
-.loading-bar::after {
+/* the rail */
+.soon::before {
   content: "";
   position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  width: 40%;
-  background: var(--umber);
-  animation: crawl 2.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  left: 0;
+  right: 0;
+  top: 4px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--line) 16%,
+    var(--line) 84%,
+    transparent
+  );
 }
-@keyframes crawl {
-  0% {
-    transform: translateX(-110%);
-  }
+/* the light travelling it */
+.soon b {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 62px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--taupe) 35%,
+    var(--umber) 50%,
+    var(--taupe) 65%,
+    transparent
+  );
+  animation: soonRide 3.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+/* The ride animates `translate`, not `transform`. The diamond below carries
+   `rotate: 45deg`, and the individual transform properties compose in the
+   order translate → rotate → scale → transform: a `transform: translateX()`
+   there would be applied in the rotated frame and send it down the diagonal.
+   `translate` is applied before the rotation, so it runs true along the rail —
+   and the rail's light has to use the same property to stay in step. */
+/* the diamond riding it */
+.soon i {
+  position: absolute;
+  top: 4px;
+  left: 31px;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  rotate: 45deg;
+  background: var(--umber);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--taupe) 26%, transparent);
+  animation: soonRide 3.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+@keyframes soonRide {
+  0%,
   100% {
-    transform: translateX(360%);
+    translate: 0 0;
   }
+  50% {
+    translate: 106px 0;
+  }
+}
+
+/* The word, lit by the same pass. The fill is transparent only where the
+   browser can actually clip a background to the glyphs; everywhere else it
+   keeps its ordinary colour. */
+.soon-text {
+  color: var(--muted);
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .soon-text {
+    background: linear-gradient(
+      100deg,
+      var(--muted) 34%,
+      var(--ink) 50%,
+      var(--muted) 66%
+    );
+    background-size: 260% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: soonShimmer 3.6s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  }
+}
+@keyframes soonShimmer {
+  0%,
+  100% {
+    background-position: 130% 0;
+  }
+  50% {
+    background-position: -30% 0;
+  }
+}
+
+/* the same diamond, standing still — the empty frame in the gallery */
+.soon-diamond {
+  display: block;
+  width: 6px;
+  height: 6px;
+  rotate: 45deg;
+  border: 1px solid var(--taupe);
 }
 
 .loading-dots span {
@@ -539,12 +837,22 @@ body {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .loading-bar::after {
-    transform: none;
-    width: 45%;
+  .soon b,
+  .soon i {
+    translate: 53px 0;
+  }
+  .soon-text {
+    -webkit-text-fill-color: var(--muted);
   }
   .loading-dots span {
     opacity: 1;
+  }
+  .g-tap {
+    opacity: 0.7;
+    scale: 1;
+  }
+  .env::after {
+    display: none;
   }
   .gate.go .e-card,
   .gate.go .seal-mark {

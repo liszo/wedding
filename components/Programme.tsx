@@ -17,7 +17,7 @@ export default function Programme() {
         className="mb-10"
       />
 
-      <Reveal>
+      <Reveal delay={0.05}>
         <ol className="mx-auto max-w-[292px]">
           {wedding.programme.map((step, i) => (
             <li

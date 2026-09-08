@@ -38,13 +38,22 @@ export default function Story() {
                   className="mt-5 block aspect-4/5 w-full rounded-[6px] object-cover"
                 />
               ) : (
-                <div className="mt-6">
-                  <div className="loading-bar" />
-                  <p className="loading-dots mt-3 text-[12px] tracking-[0.2em] text-muted">
-                    به‌زودی
-                    <span>.</span>
-                    <span>.</span>
-                    <span>.</span>
+                <div className="mt-7">
+                  {/* The chapter still being written: a rail, a light
+                      travelling along it, and a diamond riding the light.
+                      See .soon in globals.css. */}
+                  <div className="soon" aria-hidden>
+                    <b />
+                    <i />
+                  </div>
+
+                  <p className="mt-4 text-[12.5px] tracking-[0.22em]">
+                    <span className="soon-text">به‌زودی</span>
+                    <span className="loading-dots text-muted" aria-hidden>
+                      <span>.</span>
+                      <span>.</span>
+                      <span>.</span>
+                    </span>
                   </p>
                 </div>
               )}

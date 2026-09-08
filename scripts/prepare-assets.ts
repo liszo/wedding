@@ -166,9 +166,9 @@ const SLOTS: Slot[] = [
     alt: "شقایق و رامین در شب بله‌برون",
   },
   {
-    // the خواستگاری chapter — the only frame from that evening
+    // the خواستگاری chapter
     id: "proposal",
-    src: "story-1.jpg",
+    src: "khastegari.webp",
     view: 1000,
     thumb: 640,
     alt: "شقایق و رامین در شب خواستگاری",
