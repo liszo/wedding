@@ -10,6 +10,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { photos, type Photo } from "@/content/photos.generated";
 import { toFa } from "@/lib/fa";
+import { openInvite } from "@/lib/wall-invite";
 import { SectionHead } from "./ui";
 
 const SET: Photo[] = [
@@ -221,21 +222,25 @@ export default function Gallery() {
 
             {/* the frame that has not been taken yet */}
             {ci === FILLER_COLUMN && (
-              <motion.div
+              <motion.button
                 data-reveal
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: 0.08 }}
-                className="flex min-h-[104px] flex-1 flex-col items-center justify-center gap-3 rounded-[6px] border border-line bg-white px-3 text-center"
+                onClick={openInvite}
+                className="gallery-add"
               >
-                <span aria-hidden className="soon-diamond" />
-                <span className="text-[11px] leading-[1.9] text-muted">
+                <span aria-hidden className="gallery-add-plus">
+                  +
+                </span>
+                <span className="text-[11px] leading-[1.9] text-umber">
                   قاب‌های بعدی از شب عروسی
                   <br />
                   رو شما اضافه کنین 📸
                 </span>
-              </motion.div>
+                <span className="gallery-add-go">بگذارید اینجا</span>
+              </motion.button>
             )}
           </div>
         ))}

@@ -5,7 +5,17 @@ import { normalizePhone } from "../lib/phone";
 import { makeToken } from "../lib/token";
 
 const DRY = process.argv.includes("--dry");
-const SITE = "https://wedding.yekjapack.com";
+
+/**
+ * Where the links point. Override for a run with SITE=..., which is the whole
+ * story if the invitation ever moves: the tokens do not change, only the
+ * hostname in front of them, so re-running against a different SITE reissues
+ * every guest's link to the new address without invalidating anything.
+ */
+const SITE = (process.env.SITE ?? "https://wedding-seven-bay.vercel.app").replace(
+  /\/+$/,
+  ""
+);
 
 type Row = { name: string; phone: string; token: string };
 
@@ -52,6 +62,7 @@ async function main() {
 
   const rows = parseCsv(path.resolve(file));
   console.log(`\n✓ ${rows.length} valid guests parsed`);
+  console.log(`  links will point at ${SITE}`);
 
   if (DRY) {
     console.log("\nDRY RUN — nothing written to the database.\n");

@@ -48,6 +48,7 @@ export default function ChatRoom({
   const [menu, setMenu] = useState<ChatItem | null>(null);
   const [tray, setTray] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [queue, setQueue] = useState<{ done: number; total: number } | null>(null);
   const [err, setErr] = useState("");
 
   const rec = useRef<MediaRecorder | null>(null);
@@ -100,12 +101,27 @@ export default function ChatRoom({
     };
   }, []);
 
+  /**
+   * Photographs are picked in bulk.
+   *
+   * The whole point of the wall is that guests put their pictures of the night
+   * on it, and nobody takes one photograph at a night. Picking one at a time
+   * and writing a caption for each is the difference between a guest sharing
+   * their evening and a guest giving up after three.
+   *
+   * One picture rides in the composer so it can be captioned; the rest are
+   * uploaded straight away, one post each, because the schema holds one image
+   * per message.
+   */
   async function pick(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
+    const files = [...(e.target.files ?? [])];
+    if (files.length === 0) return;
     setErr("");
+
+    const [first, ...rest] = files;
+
     try {
-      const out = await compressImage(f);
+      const out = await compressImage(first);
       setBlob(out);
       setPreview((old) => {
         if (old) URL.revokeObjectURL(old);
@@ -113,7 +129,39 @@ export default function ChatRoom({
       });
     } catch {
       setErr("این عکس باز نشد. عکس دیگری انتخاب کن.");
+      return;
     }
+
+    if (rest.length === 0) return;
+
+    setBusy(true);
+    setQueue({ done: 0, total: rest.length });
+    let failed = 0;
+
+    for (const [i, f] of rest.entries()) {
+      try {
+        const out = await compressImage(f);
+        const form = new FormData();
+        form.set("image", new File([out], "photo.jpg", { type: "image/jpeg" }));
+        const res = await fetch("/api/posts", { method: "POST", body: form });
+        if (!res.ok) {
+          const j = await res.json().catch(() => ({}));
+          setErr(j.message ?? "همه‌ی عکس‌ها فرستاده نشد.");
+          failed++;
+          // a refusal applies to every one after it too — the cap and the rate
+          // limit are both about the guest, not about this particular file
+          if (res.status === 409 || res.status === 429) break;
+        }
+      } catch {
+        failed++;
+      }
+      setQueue({ done: i + 1, total: rest.length });
+    }
+
+    setQueue(null);
+    setBusy(false);
+    if (failed === 0) setErr("");
+    router.refresh();
   }
 
   function clearImage() {
@@ -486,6 +534,7 @@ export default function ChatRoom({
               ref={fileRef}
               type="file"
               accept="image/*"
+              multiple
               onChange={pick}
               className="hidden"
             />
@@ -550,6 +599,16 @@ export default function ChatRoom({
               </button>
             )}
           </div>
+
+          {queue && (
+            <div className="chat-rec">
+              <span aria-hidden className="chat-rec-dot" />
+              <span className="tabular">
+                {toFa(queue.done)} از {toFa(queue.total)}
+              </span>
+              <span className="flex-1 text-muted">در حال فرستادن عکس‌ها...</span>
+            </div>
+          )}
 
           {recording && (
             <div className="chat-rec">

@@ -53,7 +53,7 @@ export default function Envelope({ guestName }: { guestName?: string }) {
   const [going, setGoing] = useState(false);
   const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const seal = useRef<HTMLButtonElement>(null);
+  const gate = useRef<HTMLDivElement>(null);
   const enter = useRef<HTMLButtonElement>(null);
   const reduce = useReducedMotion();
 
@@ -64,13 +64,21 @@ export default function Envelope({ guestName }: { guestName?: string }) {
 
   const waiting = musicChoice === null;
 
-  // Hold the page still behind the closed gate, and move focus to the seal so
-  // keyboard and screen-reader users land on the one control that matters.
+  /**
+   * Hold the page still behind the closed gate, and move focus into the
+   * dialog so keyboard and screen-reader users land inside it.
+   *
+   * Focus goes to the dialog itself, not to the seal. Moving it onto the
+   * button made Chrome treat the button as focus-visible — the click that
+   * answered the music question counted as a keyboard-ish interaction — so a
+   * ring flashed around the envelope and then vanished. The seal is still the
+   * first thing Tab reaches, which is where a ring belongs.
+   */
   useEffect(() => {
     if (opened || waiting) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    seal.current?.focus();
+    gate.current?.focus({ preventScroll: true });
     return () => {
       document.body.style.overflow = prev;
     };
@@ -93,6 +101,8 @@ export default function Envelope({ guestName }: { guestName?: string }) {
 
   return (
     <div
+      ref={gate}
+      tabIndex={-1}
       data-gate
       className={`gate${going ? " go" : ""}${ready ? " ready" : ""}${
         leaving ? " open" : ""
@@ -115,7 +125,10 @@ export default function Envelope({ guestName }: { guestName?: string }) {
       </span>
 
       <div className="g-head">
-        {guestName && <p className="label mb-4">{guestName} عزیز</p>}
+        {/* The name is printed exactly as it stands in guests.csv. The list
+            already carries its own endearments — «مامان جون», «عمو جلیل
+            عزیزم» — so anything appended here lands on top of one. */}
+        {guestName && <p className="label mb-4">{guestName}</p>}
         <p className="text-[12.5px] leading-[2] text-muted">
           شما دعوت شدید به مراسم عروسی
         </p>
@@ -142,7 +155,6 @@ export default function Envelope({ guestName }: { guestName?: string }) {
         />
 
         <button
-          ref={seal}
           className="env"
           onClick={unseal}
           aria-label="گشودن دعوت‌نامه"

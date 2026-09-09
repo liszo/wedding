@@ -188,11 +188,15 @@ body {
    whole around it and softly visible through it. */
 .band-plate {
   border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--white) 55%, var(--line));
-  background: color-mix(in srgb, var(--white) 86%, transparent);
-  backdrop-filter: blur(8px) saturate(1.1);
+  border: 1px solid color-mix(in srgb, var(--white) 45%, var(--line));
+  /* Thin enough to read the khonche through, and no thinner: the blur is what
+     buys the rest. Blurring the backdrop flattens its local contrast, so the
+     text is not competing with edges underneath it — which is why this can be
+     far more transparent than a flat panel could. */
+  background: color-mix(in srgb, var(--white) 68%, transparent);
+  backdrop-filter: blur(14px) saturate(1.15) brightness(1.06);
   padding: 28px 16px 32px;
-  box-shadow: 0 18px 44px -22px rgba(46, 42, 38, 0.45);
+  box-shadow: 0 18px 44px -22px rgba(46, 42, 38, 0.4);
 }
 
 /* The plate is translucent, so the darkest part of the photograph still shows
@@ -204,7 +208,7 @@ body {
    Measured by compositing the real photograph, wash, grain and plate — see
    the numbers in README.md. */
 .band-on-photo {
-  --muted: #5b5148;
+  --muted: #544a41;
   --umber: #443c35;
 }
 
@@ -322,6 +326,10 @@ body {
    or the 0.9s fade would dissolve the envelope before any of this is seen.
 -------------------------------------------------------------------------- */
 
+/* the dialog takes focus itself; it is not a control and must not draw a ring */
+.gate:focus {
+  outline: none;
+}
 .gate {
   position: fixed;
   inset: 0;
@@ -933,6 +941,140 @@ body {
     transform: scale(3.4);
     opacity: 0;
   }
+}
+
+/* --- asking for their photographs ---------------------------------------- */
+
+/* The empty frame that closes the gallery. It was a caption in a box, which
+   said what could happen but not that anything could be done about it — so it
+   is a button now, and looks like one that expects to be pressed. */
+.gallery-add {
+  display: flex;
+  min-height: 118px;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 6px;
+  border: 1px dashed var(--taupe);
+  background: var(--white);
+  padding: 12px;
+  text-align: center;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.gallery-add:hover {
+  background: var(--nude);
+  border-color: var(--umber);
+}
+.gallery-add:active {
+  scale: 0.98;
+}
+.gallery-add-plus {
+  display: flex;
+  height: 26px;
+  width: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--nude-deep);
+  font-size: 17px;
+  line-height: 1;
+  color: var(--umber);
+}
+.gallery-add-go {
+  border-radius: 999px;
+  background: var(--umber);
+  padding: 4px 12px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--white);
+}
+
+/* The plate above the footer — the last chance to ask. */
+.wall-cta {
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: linear-gradient(
+    to bottom,
+    var(--nude),
+    color-mix(in srgb, var(--nude-deep) 70%, var(--white))
+  );
+  margin-top: 44px;
+  padding: 28px 20px 26px;
+  text-align: center;
+  box-shadow: 0 20px 44px -28px rgba(46, 42, 38, 0.5);
+}
+/* Two by two, not a wrapping row. The four pills come to 274px against 265px
+   of column, so a flex row breaks 3 + 1 and the orphan reads as a mistake. */
+.wall-cta-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 18px 0 20px;
+}
+.wall-cta-row li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--taupe) 55%, transparent);
+  background: color-mix(in srgb, var(--white) 70%, transparent);
+  padding: 5px 9px;
+  font-size: 10.5px;
+  white-space: nowrap;
+  color: var(--umber);
+}
+.wall-cta-row span {
+  font-size: 12px;
+  line-height: 1;
+}
+.wall-cta-go {
+  display: block;
+  border-radius: 999px;
+  background: var(--umber);
+  padding: 13px;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: var(--white);
+  transition: background 0.2s;
+}
+.wall-cta-go:hover {
+  background: var(--ink);
+}
+
+/* the one-time prompt at the foot of the page */
+.wall-invite {
+  width: 100%;
+  max-width: 344px;
+  border: 1px solid var(--line);
+  border-radius: 26px 26px 0 0;
+  background: var(--white);
+  padding: 30px 24px 26px;
+  text-align: center;
+  box-shadow: 0 -20px 60px -24px rgba(46, 42, 38, 0.5);
+}
+@media (min-width: 640px) {
+  .wall-invite {
+    border-radius: 26px;
+  }
+}
+.wall-invite-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 13px;
+  background: var(--nude);
+  padding: 10px 13px;
+  font-size: 12px;
+  color: var(--umber);
+}
+.wall-invite-row span {
+  font-size: 15px;
+  line-height: 1;
 }
 
 /* --- the wall ------------------------------------------------------------

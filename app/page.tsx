@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getGuest } from "@/lib/guest";
 import { getMyRsvp } from "@/lib/rsvp-read";
 import { rsvpClosed } from "@/lib/rsvp";
@@ -17,6 +16,8 @@ import Ceremony from "@/components/Ceremony";
 import Rsvp from "@/components/Rsvp";
 import MusicPlayer from "@/components/MusicPlayer";
 import Footer from "@/components/Footer";
+import WallCta from "@/components/WallCta";
+import WallInvite from "@/components/WallInvite";
 import Reveal from "@/components/Reveal";
 import { photos } from "@/content/photos.generated";
 import { Band, SectionHead, Seam } from "@/components/ui";
@@ -115,16 +116,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
               )}
             </Reveal>
 
-            <Reveal delay={0.1}>
-              <div className="mt-12 text-center">
-                <Link
-                  href="/wall"
-                  className="inline-block rounded-full border border-taupe px-8 py-3 text-[12.5px] tracking-[0.06em] text-umber transition hover:bg-sunk"
-                >
-                  دیوار ما
-                </Link>
-              </div>
-            </Reveal>
+            <WallCta />
           </Band>
 
           <Seam />
@@ -134,6 +126,8 @@ export default async function Home({ searchParams }: PageProps<"/">) {
 
         <MusicPlayer />
       </main>
+
+      <WallInvite />
     </>
   );
 }

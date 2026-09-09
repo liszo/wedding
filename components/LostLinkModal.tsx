@@ -1,10 +1,17 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { isMobile } from "@/lib/phone";
 
+/* "Are we on the client?", without a setState-in-effect mount flag. */
+const NEVER = () => () => {};
+const onClient = () => true;
+const onServer = () => false;
+
 export default function LostLinkModal() {
   const [open, setOpen] = useState(false);
+  const mounted = useSyncExternalStore(NEVER, onClient, onServer);
   const [phone, setPhone] = useState("");
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(
     null
@@ -52,23 +59,25 @@ export default function LostLinkModal() {
   // Accepts 09..., +989..., ۰۹... — all the same number
   const valid = isMobile(phone);
 
-  return (
-    <>
-      <button
-        ref={trigger}
-        onClick={() => setOpen(true)}
-        className="text-sm text-muted underline underline-offset-4 transition hover:text-umber"
-      >
-        لینک دعوتت را گم کرده‌ای؟
-      </button>
-
-      <AnimatePresence>
+  /**
+   * Rendered into <body>, not in place.
+   *
+   * `position: fixed` resolves against the nearest ancestor with a transform,
+   * and on the invitation this modal sits inside a <Reveal> — a motion element
+   * that has one. In place, "fixed inset-0" covered that section rather than
+   * the screen, and the sections after it painted straight over the panel: the
+   * footer's names showed through the middle of the dialog.
+   */
+  const modal = (
+    <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-80 flex items-end justify-center bg-ink/45 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+            /* above the wall invitation (850): whichever a guest opened last
+               is the one they are looking at */
+            className="fixed inset-0 z-[880] flex items-end justify-center bg-ink/45 p-0 backdrop-blur-sm sm:items-center sm:p-6"
             onClick={close}
           >
             <motion.div
@@ -137,6 +146,19 @@ export default function LostLinkModal() {
           </motion.div>
         )}
       </AnimatePresence>
+  );
+
+  return (
+    <>
+      <button
+        ref={trigger}
+        onClick={() => setOpen(true)}
+        className="text-sm text-muted underline underline-offset-4 transition hover:text-umber"
+      >
+        لینک دعوتت را گم کرده‌ای؟
+      </button>
+
+      {mounted && createPortal(modal, document.body)}
     </>
   );
 }

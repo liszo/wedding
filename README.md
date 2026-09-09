@@ -71,11 +71,14 @@ blur, a little desaturation) and the content rides on `.band-plate`: frosted pap
 white with a backdrop blur, so the text has a ground of its own while the khonche stays
 sharp and whole around it and softly visible through it.
 
-Measured on the real composite — photograph, wash, paper grain and plate — the darkest
-pixel under the content is `rgb(229,224,220)`: ink 10.9:1, umber 8.3:1. `.band-on-photo`
-still rebinds `--muted` and `--umber` a shade darker, which lands secondary text at
-5.9:1 where the default token would sit at 4.2:1. Rebinding rather than restyling means
-no component inside knows it is over a picture: `@theme inline` compiles the utility to
+The plate is thin — 68% white — and the backdrop blur is what buys the rest: blurring
+what is behind the text flattens its local contrast, so the type is not competing with
+edges underneath it, which lets the panel be far more transparent than a flat one could.
+Measured on the real composite — photograph, wash, paper grain, the blur and the plate —
+the darkest pixel under the content is `rgb(202,194,185)`: ink 8.1:1, umber 6.1:1.
+`.band-on-photo` rebinds `--muted` darker still to hold secondary text at 4.9:1, which
+it would miss at 4.4:1 otherwise. Rebinding rather than restyling means no component
+inside knows it is over a picture: `@theme inline` compiles the utility to
 `color: var(--muted)`, so the override cascades.
 
 **The wedding chapter never finishes loading.** It has no photograph and no text because
@@ -117,6 +120,21 @@ Put every guest in `guests.csv` as `name,phone` — one per line, any phone form
 npm run guests:dry   # parse and report, writing nothing
 npm run guests       # insert new guests, rewrite guest-links.csv
 ```
+
+**The name is printed exactly as written.** Nothing is appended to it anywhere on the
+site, because the list carries its own endearments — «مامان جون», «عمو جلیل عزیزم» — and
+a greeting that adds its own lands on top of one. Write the name as you want to read it.
+
+Links point at `https://wedding-seven-bay.vercel.app` by default. To issue them against
+a different address, set `SITE` for the run — the tokens do not change, only the
+hostname in front of them:
+
+```bash
+SITE=https://wedding.yekjapack.com npm run guests
+```
+
+Commas in a name are fine as long as they are Persian commas (`،`, U+060C). An ASCII
+comma would be read as a column break.
 
 **Re-running it is safe and is how you add people.** Every row is matched on its phone
 number: a guest already in the database keeps the token they already have, so links you
@@ -187,6 +205,34 @@ covered; `app/layout.tsx` hides them when scripting is off, or they would never 
 3. `/api/lookup` is the recovery path — a guest who lost their link enters their phone
    number and gets the session back.
 4. `/admin` (password) shows every response and exports CSV.
+
+## Getting guests onto the wall
+
+The wall is the one part of the invitation a guest has to be *told* about: everything
+else is on the page in front of them and this is behind a link. So it is offered three
+ways, in rising order of insistence:
+
+1. the empty frame that closes the gallery — a dashed, obviously pressable tile, right
+   where they are already looking at photographs;
+2. `<WallCta>` above the footer, a plate that says what the wall is and what it wants;
+3. `<WallInvite>`, once, when a guest reaches the bottom without having taken either.
+
+Only the third is unprompted, and `claimFirstVisit()` in `lib/wall-invite.ts` makes sure
+it is genuinely once per browser. A prompt that returns every visit is a nag, and a
+guest who has already been to the wall does not need to be sold it again. All three open
+the same modal, which is why the store exists: the gallery tile and the modal live in
+different subtrees, and threading a prop between them would mean making every band in
+between a client component.
+
+`wedding.uploadCap` is enforced in `/api/posts` — it had sat in the config unread, so
+the wall promised "up to 20 photographs" and would have accepted two hundred. Stickers,
+voice notes and GIFs are excluded from the count; they are not what the cap is about.
+
+The photo picker takes a multi-selection. Nobody takes one photograph at a wedding, and
+picking them one at a time is the difference between a guest sharing their evening and a
+guest giving up after three. One picture rides in the composer so it can be captioned;
+the rest upload straight away, one post each, because the schema holds one image per
+message.
 
 ## The wall
 

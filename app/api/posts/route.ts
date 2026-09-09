@@ -7,6 +7,8 @@ import { getGuest } from "@/lib/guest";
 import { tooMany } from "@/lib/rate-limit";
 import { isSticker, stickerUrl } from "@/content/stickers";
 import { isAllowedGifUrl } from "@/lib/media";
+import { wedding } from "@/content/config";
+import { toFa } from "@/lib/fa";
 
 const BUCKET = "wall";
 const MAX_BYTES = 3 * 1024 * 1024;
@@ -21,9 +23,12 @@ export async function POST(req: Request) {
       { status: 401 }
     );
 
-  if (await tooMany(`post:${guest.id}`, 10, 60))
+  // Generous enough to send a whole camera roll in one go: the composer
+  // uploads a multi-selection as one post per photograph, so a guest picking
+  // twenty at once makes twenty requests in about a minute.
+  if (await tooMany(`post:${guest.id}`, 40, 60))
     return NextResponse.json(
-      { message: "کمی استراحت کن، بعد دوباره بنویس." },
+      { message: "کمی استراحت کن، بعد دوباره بفرست." },
       { status: 429 }
     );
 
@@ -95,6 +100,26 @@ export async function POST(req: Request) {
   } else if (file instanceof File && file.size > 0) {
     if (file.size > MAX_BYTES)
       return NextResponse.json({ message: "عکس خیلی بزرگ است." }, { status: 413 });
+
+    // The cap has always been in content/config.ts and has never been
+    // enforced — the wall promised "up to 20 photographs" and would have taken
+    // two hundred. Stickers, voice notes and GIFs are excluded: they are not
+    // what the cap is about, and they live at paths of their own.
+    const { count } = await db()
+      .from("posts")
+      .select("id", { count: "exact", head: true })
+      .eq("guest_id", guest.id)
+      .not("image_url", "is", null)
+      .not("image_url", "like", "/stickers/%")
+      .not("image_url", "like", "%/voice/%");
+
+    if ((count ?? 0) >= wedding.uploadCap)
+      return NextResponse.json(
+        {
+          message: `تا ${toFa(wedding.uploadCap)} عکس می‌شود گذاشت. برای عکس تازه، یکی از قبلی‌ها را پاک کن.`,
+        },
+        { status: 409 }
+      );
 
     const key = `${crypto.randomUUID()}.jpg`;
     const bytes = new Uint8Array(await file.arrayBuffer());
