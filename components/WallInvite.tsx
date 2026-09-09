@@ -15,7 +15,6 @@ const onServer = () => false;
 const THINGS = [
   { icon: "📷", text: `تا ${toFa(wedding.uploadCap)} عکس از شب مراسم` },
   { icon: "💬", text: "پیام و آرزو برای ما" },
-  { icon: "🎤", text: "پیام صوتی و استیکر" },
 ];
 
 /**

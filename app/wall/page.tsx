@@ -25,7 +25,8 @@ export default async function Wall() {
     <ChatRoom
       items={buildTimeline(posts)}
       signedIn={Boolean(guest)}
-      admin={admin}
+      /* the couple can clear anything off the wall without the admin password */
+      admin={admin || Boolean(guest?.host)}
       guestName={guest?.name}
     />
   );

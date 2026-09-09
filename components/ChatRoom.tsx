@@ -411,7 +411,6 @@ export default function ChatRoom({
                   item={item}
                   showAuthor={showAuthor}
                   canReact={signedIn}
-                  admin={admin}
                   onReply={reply}
                   onMenu={signedIn ? setMenu : () => {}}
                 />
@@ -642,7 +641,12 @@ export default function ChatRoom({
         </div>
       )}
 
-      <ChatMenu item={menu} onPick={onMenuPick} onClose={() => setMenu(null)} />
+      <ChatMenu
+        item={menu}
+        canModerate={admin}
+        onPick={onMenuPick}
+        onClose={() => setMenu(null)}
+      />
     </div>
   );
 }

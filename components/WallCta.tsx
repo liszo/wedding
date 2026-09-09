@@ -7,10 +7,6 @@ import Reveal from "./Reveal";
 const THINGS = [
   { icon: "📷", label: `${toFa(wedding.uploadCap)} عکس` },
   { icon: "💬", label: "پیام" },
-  { icon: "🎤", label: "صدا" },
-  // not 🩷 — U+1FA77 is Unicode 15 and renders as a blank box on plenty of
-  // the phones this invitation is going to
-  { icon: "✨", label: "استیکر" },
 ];
 
 /**

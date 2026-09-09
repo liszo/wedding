@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
 import { getGuest } from "@/lib/guest";
+import { isAdmin } from "@/lib/admin";
 import { tooMany } from "@/lib/rate-limit";
 import { storageKey } from "@/lib/media";
 
@@ -79,25 +80,34 @@ export async function DELETE(req: Request) {
   if (!target)
     return NextResponse.json({ message: "درخواست نامعتبر." }, { status: 400 });
 
+  /**
+   * A guest may delete their own message; the couple and the admin may delete
+   * anyone's. The only difference is whether the ownership clause is applied,
+   * so both cases run the same query and there is no second endpoint carrying
+   * its own, weaker copy of the rule.
+   *
+   * `owner` is a sentinel, not a filter that always matches: PostgREST has no
+   * "always true" comparison, so the moderator case simply omits the clause.
+   */
+  const moderator = guest.host || (await isAdmin());
+
   // read the attachment first: once the row is gone there is nothing left to
   // tell us which file in the bucket belonged to it
   let key: string | null = null;
   if (target.table === "posts") {
-    const { data } = await db()
-      .from("posts")
-      .select("image_url")
-      .eq("id", target.id)
-      .eq("guest_id", guest.id)
-      .maybeSingle();
+    const read = db().from("posts").select("image_url").eq("id", target.id);
+    const { data } = await (moderator
+      ? read
+      : read.eq("guest_id", guest.id)
+    ).maybeSingle();
     key = storageKey(data?.image_url ?? null);
   }
 
-  const { data, error } = await db()
-    .from(target.table)
-    .delete()
-    .eq("id", target.id)
-    .eq("guest_id", guest.id)
-    .select("id");
+  const del = db().from(target.table).delete().eq("id", target.id);
+  const { data, error } = await (moderator
+    ? del
+    : del.eq("guest_id", guest.id)
+  ).select("id");
 
   if (error)
     return NextResponse.json({ message: "حذف نشد." }, { status: 500 });
@@ -109,5 +119,5 @@ export async function DELETE(req: Request) {
 
   if (key) await db().storage.from("wall").remove([key]);
 
-  return NextResponse.json({ message: "حذف شد." });
+  return NextResponse.json({ message: "حذف شد.", moderated: moderator });
 }

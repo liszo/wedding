@@ -18,10 +18,13 @@ export type MenuAction = "reply" | "edit" | "copy" | "delete";
  */
 export default function ChatMenu({
   item,
+  canModerate,
   onPick,
   onClose,
 }: {
   item: ChatItem | null;
+  /** the couple, or an admin: may delete anyone's message */
+  canModerate: boolean;
   onPick: (action: MenuAction) => void;
   onClose: () => void;
 }) {
@@ -47,7 +50,7 @@ export default function ChatMenu({
   // only text can be edited: there is nothing to type over a sticker, a
   // photograph or a voice note
   const canEdit = Boolean(item?.mine && item?.body);
-  const canDelete = Boolean(item?.mine);
+  const canDelete = Boolean(item?.mine) || canModerate;
 
   const sheetUi = (
     <AnimatePresence>
@@ -93,7 +96,8 @@ export default function ChatMenu({
             )}
             {canDelete && (
               <button onClick={() => onPick("delete")} className="chat-sheet-bad">
-                <span aria-hidden>🗑</span> حذف
+                <span aria-hidden>🗑</span>{" "}
+                {item.mine ? "حذف" : "حذف این پیام"}
               </button>
             )}
 

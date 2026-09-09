@@ -54,6 +54,17 @@ export const wedding = {
   ],
 
   uploadCap: 20,
+
+  /**
+   * The couple. These two can delete anything on the wall, from the wall
+   * itself, without going through /admin and its password.
+   *
+   * Matched on phone number rather than name because the phone is the thing
+   * that is already unique in guests.csv, and it is what identifies a guest
+   * everywhere else in this project. `npm run guests` writes the flag onto the
+   * rows; changing this list and re-running moves it.
+   */
+  hosts: ["09363093986", "09353968550"],
 } as const;
 
 export const coupleNames = `${wedding.brideName} و ${wedding.groomName}`;

@@ -53,7 +53,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.45, duration: 1 }}
-          className="label mb-3"
+          className="hero-label mb-3"
         >
           دعوت‌نامه‌ی عروسی
         </motion.p>
@@ -63,7 +63,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className="nastaliq text-[34px] leading-[1.5] text-ink sm:text-[38px]"
+          className="nastaliq text-[42px] leading-[1.42] text-ink sm:text-[46px]"
         >
           <span className="block">{wedding.brideName}</span>
           {/* the conjunction, set small and set back — it joins the two names
@@ -78,7 +78,7 @@ export default function Hero() {
           initial={{ opacity: 0, scaleX: 0 }}
           animate={{ opacity: 1, scaleX: 1 }}
           transition={{ delay: 0.75, duration: 0.9 }}
-          className="my-3 h-px w-10 origin-left bg-taupe"
+          className="my-4 h-px w-12 origin-left bg-taupe"
         />
 
         <motion.p
@@ -86,7 +86,7 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9, duration: 1 }}
-          className="text-[11.5px] tracking-[0.2em] text-muted"
+          className="text-[13px] tracking-[0.16em] text-muted"
         >
           {wedding.weekdayFa} {wedding.dateFa}
         </motion.p>

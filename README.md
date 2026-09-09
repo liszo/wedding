@@ -71,14 +71,15 @@ blur, a little desaturation) and the content rides on `.band-plate`: frosted pap
 white with a backdrop blur, so the text has a ground of its own while the khonche stays
 sharp and whole around it and softly visible through it.
 
-The plate is thin — 68% white — and the backdrop blur is what buys the rest: blurring
+The plate is thin — 46% white — and the backdrop blur is what buys the rest: blurring
 what is behind the text flattens its local contrast, so the type is not competing with
 edges underneath it, which lets the panel be far more transparent than a flat one could.
 Measured on the real composite — photograph, wash, paper grain, the blur and the plate —
-the darkest pixel under the content is `rgb(202,194,185)`: ink 8.1:1, umber 6.1:1.
-`.band-on-photo` rebinds `--muted` darker still to hold secondary text at 4.9:1, which
-it would miss at 4.4:1 otherwise. Rebinding rather than restyling means no component
-inside knows it is over a picture: `@theme inline` compiles the utility to
+the darkest pixel under the content is `rgb(172,159,147)`, and `.band-on-photo` rebinds
+the two secondary tokens dark enough to hold AA over it: ink 5.5:1, umber 5.3:1, muted
+4.5:1. That is the floor. Thin the plate further and the numbers go under, so anything
+below this needs the tokens to move with it. Rebinding rather than restyling means no
+component inside knows it is over a picture: `@theme inline` compiles the utility to
 `color: var(--muted)`, so the override cascades.
 
 **The wedding chapter never finishes loading.** It has no photograph and no text because
@@ -113,17 +114,30 @@ ornament library they used is still complete under `design/`.
 
 ## Adding guests
 
-Put every guest in `guests.csv` as `name,phone` — one per line, any phone format
-(`0912…`, `+98 912…`, Persian digits, dashes; `normalizePhone` sorts it out). Then:
+Put every guest in `guests.csv` as `name,phone,display_name` — one per line, any phone
+format (`0912…`, `+98 912…`, Persian digits, dashes; `normalizePhone` sorts it out).
+The third column is optional. Then:
 
 ```bash
 npm run guests:dry   # parse and report, writing nothing
 npm run guests       # insert new guests, rewrite guest-links.csv
 ```
 
-**The name is printed exactly as written.** Nothing is appended to it anywhere on the
+**`name` is printed exactly as written.** Nothing is appended to it anywhere on the
 site, because the list carries its own endearments — «مامان جون», «عمو جلیل عزیزم» — and
-a greeting that adds its own lands on top of one. Write the name as you want to read it.
+a greeting that adds its own lands on top of one. Write it as you want to read it.
+
+**`display_name` is the byline on the wall.** An endearment addressed *to* someone reads
+as nonsense coming *from* them: «خاله عزیز» is right on the envelope and wrong over a
+message. Leave the column empty and the wall falls back to `name`.
+
+**Re-running updates existing guests.** Only the token is never reissued — links already
+sent have to keep working. Name, display name and host flag all follow the CSV, or
+editing the file after the first run would silently do nothing.
+
+`wedding.hosts` in `content/config.ts` lists the couple's phone numbers. `npm run guests`
+writes that onto the rows as `host`, and a host can delete anyone's message from the wall
+itself without the /admin password. Change the list and re-run to move it.
 
 Links point at `https://wedding-seven-bay.vercel.app` by default. To issue them against
 a different address, set `SITE` for the run — the tokens do not change, only the
@@ -276,6 +290,10 @@ there is one room and everyone is already in it. Editing and deleting go through
 service-role key bypasses row-level security, so a read-then-write would let two racing
 requests act on someone else's message.
 
+A **host** — the couple, flagged from `wedding.hosts` — sees delete on anyone's message.
+That is the same endpoint with the ownership clause omitted, not a second one: a separate
+moderation route is a second copy of the authorisation rule, and the two drift.
+
 **Voice notes** record with `MediaRecorder`, upload to the `wall` bucket under `voice/`,
 and are recognised on the way back by their file extension (`lib/media.ts`). The send
 button becomes a microphone when there is nothing to send, which is the swap that lets
@@ -303,6 +321,27 @@ call site so nothing reflows — the whole served set is under 900KB, and thumbn
 uploads on the wall are compressed in the browser (`lib/compress.ts`) before upload.
 The `@next/next/no-img-element` rule is switched off in `eslint.config.mjs` for exactly
 this reason.
+
+## Database
+
+`supabase/migrations/` holds SQL to paste into the dashboard's SQL editor. There is no
+migration runner here; the schema was made by hand and this is the record of it.
+
+`0001` adds `guests.display_name` and `guests.host`, indexes `rate_limits (key,
+created_at)`, and **enables row-level security on every table**. That last one matters:
+the app reaches Postgres only through the service-role key, from the server, and the
+service role bypasses RLS — so turning it on costs this application nothing and it is
+the only thing standing between the anon key and a table of real names, phone numbers
+and invitation tokens.
+
+Two things in the schema are unused and can be dropped: `guests.upload_count` was never
+written (the photo cap counts posts), and nothing has ever inserted into `uploads`. The
+migration leaves both alone and says so.
+
+`rate_limits` had no cleanup — every post, reaction, comment, edit, delete and GIF search
+writes a row and `tooMany` counts over them on every action. `lib/rate-limit.ts` now
+sweeps rows older than two hours on roughly one call in fifty, which needs no cron and
+puts the cost on one request rather than on a schedule nobody will remember.
 
 ## Environment
 

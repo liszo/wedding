@@ -6,7 +6,6 @@ import { avatarTone, clockFa, initial } from "@/lib/chat";
 import Sticker from "./Sticker";
 import ChatReactions from "./ChatReactions";
 import VoiceNote from "./VoiceNote";
-import DeletePost from "./DeletePost";
 
 /** how long a touch has to rest before it counts as a long press */
 const HOLD_MS = 420;
@@ -23,7 +22,6 @@ export default function ChatBubble({
   item,
   showAuthor,
   canReact,
-  admin,
   onReply,
   onMenu,
 }: {
@@ -31,7 +29,6 @@ export default function ChatBubble({
   /** false when the previous message was from the same person */
   showAuthor: boolean;
   canReact: boolean;
-  admin: boolean;
   onReply: (item: ChatItem) => void;
   onMenu: (item: ChatItem) => void;
 }) {
@@ -149,7 +146,6 @@ export default function ChatBubble({
             <time dateTime={item.at} className="tabular">
               {clockFa(item.at)}
             </time>
-            {admin && item.postId && <DeletePost id={item.postId} />}
           </div>
         </div>
 

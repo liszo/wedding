@@ -128,7 +128,7 @@ export default function Envelope({ guestName }: { guestName?: string }) {
         {/* The name is printed exactly as it stands in guests.csv. The list
             already carries its own endearments — «مامان جون», «عمو جلیل
             عزیزم» — so anything appended here lands on top of one. */}
-        {guestName && <p className="label mb-4">{guestName}</p>}
+        {guestName && <p className="g-name">{guestName}</p>}
         <p className="text-[12.5px] leading-[2] text-muted">
           شما دعوت شدید به مراسم عروسی
         </p>

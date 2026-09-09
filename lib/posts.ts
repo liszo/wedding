@@ -24,9 +24,17 @@ export type WallPost = {
   comments: WallComment[];
 };
 
+/**
+ * Who a message is from.
+ *
+ * `display_name` wins where it is set. The `name` column is how the couple
+ * address that guest on the envelope — «خاله عزیز», «مامان جون» — and an
+ * endearment addressed *to* someone reads as nonsense as a byline *from* them.
+ */
 function nameOf(g: unknown): string {
   const one = Array.isArray(g) ? g[0] : g;
-  return (one as { name?: string })?.name ?? "مهمان";
+  const row = one as { name?: string; display_name?: string | null };
+  return row?.display_name?.trim() || row?.name || "مهمان";
 }
 
 export async function listPosts(
@@ -36,7 +44,7 @@ export async function listPosts(
   const { data } = await db()
     .from("posts")
     .select(
-      "id, body, image_url, created_at, guest_id, guests(name), reactions(kind, guest_id), comments(id, body, sticker, created_at, guest_id, guests(name))"
+      "id, body, image_url, created_at, guest_id, guests(name, display_name), reactions(kind, guest_id), comments(id, body, sticker, created_at, guest_id, guests(name, display_name))"
     )
     .order("created_at", { ascending: false })
     .limit(limit);
