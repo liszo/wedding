@@ -62,16 +62,21 @@ and white — stripped at build time rather than with a CSS filter, so the brows
 paints the colour version first.
 
 **A photograph can sit behind a band.** `<Band photo={...}>` puts the khonche behind
-روزشمار. Veiling it under a wash thick enough to guarantee legibility is what made it
-invisible in the first place, so instead a floor colour is blended under the picture with
-`background-blend-mode: lighten`: the blend takes the per-channel maximum, so the shadows
-flatten into the floor and no pixel of the composite can be darker than it, while the
-highlights come through untouched. Blur only averages, so it cannot break the floor
-either. Measured on the real composite — photograph, floor, wash and paper grain — the
-darkest pixel in the content column is `rgb(203,197,190)`; `.band-on-photo` then rebinds
-`--muted` and `--umber` darker so the secondary text lands at 5.6:1 rather than 3.2:1.
-Rebinding rather than restyling means no component inside knows it is over a picture:
-`@theme inline` compiles the utility to `color: var(--muted)`, so the override cascades.
+روزشمار. Two earlier attempts fought the same losing battle — a heavy wash, then a floor
+colour blended in with `background-blend-mode: lighten` — and both bought their contrast
+by flattening the picture into a smudge you could not identify. The picture is the point.
+
+So legibility is no longer the photograph's job. It is shown almost untouched (a 1.1px
+blur, a little desaturation) and the content rides on `.band-plate`: frosted paper, 86%
+white with a backdrop blur, so the text has a ground of its own while the khonche stays
+sharp and whole around it and softly visible through it.
+
+Measured on the real composite — photograph, wash, paper grain and plate — the darkest
+pixel under the content is `rgb(229,224,220)`: ink 10.9:1, umber 8.3:1. `.band-on-photo`
+still rebinds `--muted` and `--umber` a shade darker, which lands secondary text at
+5.9:1 where the default token would sit at 4.2:1. Rebinding rather than restyling means
+no component inside knows it is over a picture: `@theme inline` compiles the utility to
+`color: var(--muted)`, so the override cascades.
 
 **The wedding chapter never finishes loading.** It has no photograph and no text because
 it has not happened yet, so `.soon` renders a rail with a light travelling along it, a
@@ -141,17 +146,27 @@ covered; `app/layout.tsx` hides them when scripting is off, or they would never 
    It rests at a slight three-quarter angle and squares up when touched; the flap
    swings back in 3D and fades as it goes (left solid it stands up behind the envelope
    as a slab of paper that crowds everything coming out); the lining is uncovered; two
-   sprays of flowers rise out of the pocket, and behind them two photographs fan out
-   either side of a card carrying the date. Their lower halves stay behind the pocket
-   front the whole way, so they read as being drawn out of the envelope rather than
-   appearing over it.
+   sprays of flowers rise out of the pocket, and behind them three photographs fan out
+   around a card carrying the date. Their lower halves stay behind the pocket front the
+   whole way, so they read as being drawn out of the envelope rather than appearing
+   over it.
+
+   **It then waits.** All of this used to run into a bloom on one timer, so the
+   photographs were on screen for well under a second before the whole thing dissolved
+   itself and nobody could look at them. Now `go` opens it, `ready` puts a way in on
+   screen, and nothing leaves until the guest presses it.
 
    The paper itself is drawn: the pocket front is a rectangle with a V notched out of
    the top, the three fold panels inside it are tinted a few percent apart with the two
    lower diagonals of an envelope's X as their seams, the embossed texture is the same
    tile the page grain uses, and a slow highlight crosses the paper and the wax every
-   few seconds. Only the wax, the lining and the flowers are images. The gate around it
-   carries the same double rule and corner diamonds as a printed card.
+   few seconds. Only the wax, the flowers and the photographs are images. The gate
+   around it carries the same double rule and corner diamonds as a printed card.
+
+   That highlight is an element that moves, clipped to the paper, not a
+   `background-position` sweep. Sweeping the background repaints the whole envelope on
+   the CPU every frame — over a 3D-transformed parent with a blended paper texture that
+   is enough to drop frames, and it visibly hitched at the start of every pass.
 
    Everything that moves inside the envelope animates the `translate` property rather
    than `transform: translate()`. The pieces carry `rotate` and `scale`, and the
@@ -196,6 +211,35 @@ Reactions show only the ones people have actually used; the rest live behind one
 that flips below its anchor when there is no room above it. The old wall printed all
 four chips at zero on every post, which is a form, not a conversation.
 
+**Reactions are plain emoji; stickers are the couple's own illustrations.** They used to
+be the same six pictures, which left nothing to tell a reaction from a sticker message.
+The four reaction *ids* are unchanged and must stay that way — they are stored as
+strings in the `reactions` table, so renaming one orphans every reaction already left.
+Only what they are drawn as changed. Adding a fifth would mean checking first whether
+that column carries a CHECK constraint.
+
+**The tray behind the sticker button has three tabs**, the way Telegram does: emoji,
+stickers, GIFs. Emoji are typed into the message you are writing rather than sent, which
+is what an emoji keyboard does; stickers and GIFs are whole messages and send on the tap.
+Stickers sit three across — at a sixth of the width you cannot tell one illustration of
+the couple from another.
+
+**Long-press or right-click a message** for reply, copy, edit and delete. No forward:
+there is one room and everyone is already in it. Editing and deleting go through
+`/api/message`, which names the row *and* the guest in the same `.eq()` chain — the
+service-role key bypasses row-level security, so a read-then-write would let two racing
+requests act on someone else's message.
+
+**Voice notes** record with `MediaRecorder`, upload to the `wall` bucket under `voice/`,
+and are recognised on the way back by their file extension (`lib/media.ts`). The send
+button becomes a microphone when there is nothing to send, which is the swap that lets
+one button do both jobs.
+
+GIF search is optional and proxied through `/api/gifs` so the key never reaches a
+browser. Without `TENOR_API_KEY` the tab says so plainly and everything else still works.
+Only the Tenor media hosts are accepted when a GIF is posted — otherwise any signed-in
+guest could point the wall at any image on the internet.
+
 ## Maps
 
 `wedding.venue.neshan` holds Neshan's **saved-place** short link. A `/maps/@lat,lng,zoom`
@@ -222,6 +266,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 SESSION_SECRET=            # any long random string; signs the guest cookie
 ADMIN_PASSWORD=
 NEXT_PUBLIC_SITE_URL=      # optional; only needed if not deploying on Vercel
+TENOR_API_KEY=             # optional; without it the wall's GIF tab says so
 ```
 
 `NEXT_PUBLIC_SITE_URL` sets `metadataBase`, which is what makes the WhatsApp/Telegram

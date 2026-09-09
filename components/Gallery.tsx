@@ -173,6 +173,7 @@ export default function Gallery() {
     <>
       <SectionHead
         id="gallery-h"
+        icon="📷"
         label="چند قاب از شبِ بله‌برون و خواستگاری"
         title="گالری"
         className="mb-10"
@@ -230,9 +231,9 @@ export default function Gallery() {
               >
                 <span aria-hidden className="soon-diamond" />
                 <span className="text-[11px] leading-[1.9] text-muted">
-                  قاب‌های بعدی،
+                  قاب‌های بعدی از شب عروسی
                   <br />
-                  شبِ عروسی
+                  رو شما اضافه کنین 📸
                 </span>
               </motion.div>
             )}

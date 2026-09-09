@@ -268,13 +268,36 @@ const SLOTS: Slot[] = [
     alt: "قابی از شب بله‌برون",
   },
   {
-    // Not in the gallery — this one sits behind the روزشمار band, blurred and
-    // washed back. It never renders sharp, so a small file is plenty.
+    // Not in the gallery — this one is the ground the روزشمار band is printed
+    // on. It has to stay recognisable, so it ships big enough to hold up
+    // behind a full-width band rather than at thumbnail size.
     id: "khoncheBg",
     src: "khonche.jpg",
-    view: 900,
-    thumb: 500,
-    alt: "",
+    view: 1100,
+    thumb: 620,
+    alt: "خونچه‌ی عروس",
+  },
+  // The three frames that come out of the envelope when it opens.
+  {
+    id: "envelope1",
+    src: "envelope1.jpg",
+    view: 720,
+    thumb: 420,
+    alt: "شقایق و رامین",
+  },
+  {
+    id: "envelope2",
+    src: "envelope2.jpg",
+    view: 720,
+    thumb: 420,
+    alt: "شقایق و رامین",
+  },
+  {
+    id: "envelope3",
+    src: "envelope3.jpg",
+    view: 720,
+    thumb: 420,
+    alt: "شقایق و رامین",
   },
 ];
 
@@ -350,15 +373,16 @@ async function stickers() {
 
   const present = new Set(await readdir(from));
 
-  for (const { id } of STICKERS) {
-    if (!present.has(`${id}.png`)) {
-      console.warn(`  ⚠ stickers/${id}.png declared but missing`);
+  for (const s of STICKERS) {
+    const file = s.file ?? `${s.id}.png`;
+    const id = s.id;
+    if (!present.has(file)) {
+      console.warn(`  ⚠ stickers/${file} declared but missing`);
       continue;
     }
-    const file = `${id}.png`;
     for (const [suffix, size] of [
-      ["", 112], // 56px sticker comment at 2x
-      ["-s", 48], // 24px inline at 2x
+      ["", 260], // the 128px sticker message at 2x
+      ["-s", 56], // the 28px inline uses at 2x
     ] as const) {
       const buf = await sharp(path.join(from, file))
         .resize(size, size, { fit: "inside" })

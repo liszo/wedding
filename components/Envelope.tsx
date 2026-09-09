@@ -39,14 +39,28 @@ export default function Envelope({ guestName }: { guestName?: string }) {
     music.getChoice,
     music.getServerChoice
   );
-  // Two states, not one. `go` starts the choreography; `open` fades the whole
-  // layer out. They cannot be set together: the fade is 0.9s and the
-  // choreography is 2.35s, so a single flag would dissolve the envelope while
-  // the flap was still swinging and nobody would ever see the card come out.
+  /**
+   * Three states, because the envelope now waits for the guest.
+   *
+   * `go`   the flap swings back and the photographs come out
+   * `ready` the choreography has finished — the way in appears
+   * `open` the scene blooms past the viewport and the layer leaves
+   *
+   * It used to run all of that on one timer, so the photographs were on screen
+   * for well under a second before the whole thing dissolved itself. Nobody
+   * had time to look at them. Now nothing dissolves until the guest says so.
+   */
   const [going, setGoing] = useState(false);
+  const [ready, setReady] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const seal = useRef<HTMLButtonElement>(null);
+  const enter = useRef<HTMLButtonElement>(null);
   const reduce = useReducedMotion();
+
+  // move focus onto the way in as soon as it exists
+  useEffect(() => {
+    if (ready) enter.current?.focus();
+  }, [ready]);
 
   const waiting = musicChoice === null;
 
@@ -65,12 +79,14 @@ export default function Envelope({ guestName }: { guestName?: string }) {
   function unseal() {
     if (going) return;
     setGoing(true);
+    // the flap, the flowers and the three prints all land by ~2.3s
+    window.setTimeout(() => setReady(true), reduce ? 120 : 2300);
+  }
 
-    // the bloom starts at 2s; the fade rides the back half of it
-    window.setTimeout(() => setLeaving(true), reduce ? 100 : 2000);
-
-    // let the flap and bloom play out before the layer is removed
-    window.setTimeout(() => setOpened(true), reduce ? 350 : 2950);
+  function go() {
+    if (leaving) return;
+    setLeaving(true);
+    window.setTimeout(() => setOpened(true), reduce ? 250 : 1250);
   }
 
   if (opened || waiting) return null;
@@ -78,12 +94,16 @@ export default function Envelope({ guestName }: { guestName?: string }) {
   return (
     <div
       data-gate
-      className={`gate${going ? " go" : ""}${leaving ? " open" : ""}`}
+      className={`gate${going ? " go" : ""}${ready ? " ready" : ""}${
+        leaving ? " open" : ""
+      }`}
       role="dialog"
       aria-modal="true"
       aria-label="دعوت‌نامه"
       onKeyDown={(e) => {
-        if (e.key === "Escape") unseal();
+        if (e.key !== "Escape") return;
+        if (ready) go();
+        else unseal();
       }}
     >
       {/* the ruled border and corner marks of a printed card */}
@@ -138,20 +158,29 @@ export default function Envelope({ guestName }: { guestName?: string }) {
             <img src={FLORAL.peony} alt="" />
           </span>
 
+          {/* Three prints, fanned. The tall one sits furthest back and rises
+              highest, so all three read at once instead of stacking. */}
           <span className="e-stack" aria-hidden>
             <img
-              className="e-pic e-pic-a"
-              src={photos.proposal.thumb}
+              className="e-pic e-pic-c"
+              src={photos.envelope3.thumb}
               alt=""
-              width={photos.proposal.tw}
-              height={photos.proposal.th}
+              width={photos.envelope3.tw}
+              height={photos.envelope3.th}
+            />
+            <img
+              className="e-pic e-pic-a"
+              src={photos.envelope1.thumb}
+              alt=""
+              width={photos.envelope1.tw}
+              height={photos.envelope1.th}
             />
             <img
               className="e-pic e-pic-b"
-              src={photos.gallery1.thumb}
+              src={photos.envelope2.thumb}
               alt=""
-              width={photos.gallery1.tw}
-              height={photos.gallery1.th}
+              width={photos.envelope2.tw}
+              height={photos.envelope2.th}
             />
             <span className="e-note">
               <b>{wedding.weekdayFa}</b>
@@ -191,10 +220,18 @@ export default function Envelope({ guestName }: { guestName?: string }) {
         />
       </div>
 
-      <p className="g-foot text-[11.5px] tracking-[0.16em] text-muted">
-        <span aria-hidden className="g-tap" />
-        برای گشودن، لمس کنید
-      </p>
+      <div className="g-foot">
+        {ready ? (
+          <button ref={enter} onClick={go} className="g-enter">
+            ورود به دعوت‌نامه
+          </button>
+        ) : (
+          <p className="text-[11.5px] tracking-[0.16em] text-muted">
+            <span aria-hidden className="g-tap" />
+            برای گشودن، لمس کنید
+          </p>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { KINDS, type Kind } from "@/lib/reactions";
+import { KINDS, REACTION, type Kind } from "@/lib/reactions";
 import type { ReactionState } from "@/lib/posts";
 import { toFa } from "@/lib/fa";
-import Sticker from "./Sticker";
 
 /**
  * Reactions, the way a messaging app does them: only the ones people have
@@ -94,9 +93,9 @@ export default function ChatReactions({
             initial={{ scale: 0.7 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 500, damping: 18 }}
-            className="flex"
+            className="text-[13px] leading-none"
           >
-            <Sticker id={r.kind} size={15} />
+            {REACTION[r.kind].emoji}
           </motion.span>
           <span className="tabular text-[10px] text-muted">{toFa(r.count)}</span>
         </button>
@@ -129,10 +128,11 @@ export default function ChatReactions({
               <button
                 key={k}
                 onClick={() => toggle(k)}
-                aria-label={k}
-                className="flex h-7 w-7 items-center justify-center rounded-full transition hover:bg-sunk active:scale-90"
+                aria-label={REACTION[k].label}
+                title={REACTION[k].label}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[19px] leading-none transition hover:bg-sunk active:scale-90"
               >
-                <Sticker id={k} size={22} />
+                {REACTION[k].emoji}
               </button>
             ))}
           </motion.div>

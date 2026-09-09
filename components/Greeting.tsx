@@ -16,6 +16,9 @@ export default function Greeting() {
           کنار شما جشن بگیریم.
         </p>
         <p className="nastaliq mt-4 text-[21px] text-ink">منتظرتونیم</p>
+        <p aria-hidden className="mt-2 text-[15px] tracking-[0.3em]">
+          💍 🤍 🌸
+        </p>
       </div>
     </Reveal>
   );

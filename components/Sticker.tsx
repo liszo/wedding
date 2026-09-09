@@ -1,9 +1,9 @@
 import { STICKERS_READY, stickerById } from "@/content/stickers";
 
 /**
- * Two rasters per sticker, both WebP: `-s` for the 18-30px inline uses and the
- * full one for the 56px comment sticker. Picking by size keeps a reaction chip
- * from downloading the large asset.
+ * Two rasters per sticker, both WebP: `-s` for the small inline uses and the
+ * full one for a sticker sent as a message. Picking by size keeps a tray
+ * thumbnail from pulling down the large asset.
  */
 export default function Sticker({
   id,
@@ -28,7 +28,7 @@ export default function Sticker({
 
   return (
     <img
-      src={`/stickers/${s.id}${size <= 32 ? "-s" : ""}.webp`}
+      src={`/stickers/${s.id}${size <= 34 ? "-s" : ""}.webp`}
       alt={s.label}
       width={size}
       height={size}

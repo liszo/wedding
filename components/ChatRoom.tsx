@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import type { ChatItem } from "@/lib/chat";
 import { dayKey, dayLabel } from "@/lib/chat";
-import { STICKERS } from "@/content/stickers";
 import { compressImage } from "@/lib/compress";
 import { coupleNames } from "@/content/config";
-import { toFa } from "@/lib/fa";
+import { toFa, pad2 } from "@/lib/fa";
 import ChatBubble from "./ChatBubble";
+import ChatTray from "./ChatTray";
+import ChatMenu, { type MenuAction } from "./ChatMenu";
 import Sticker from "./Sticker";
 import LostLinkModal from "./LostLinkModal";
 
@@ -43,9 +44,16 @@ export default function ChatRoom({
   const [preview, setPreview] = useState<string | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [replyTo, setReplyTo] = useState<ChatItem | null>(null);
+  const [editing, setEditing] = useState<ChatItem | null>(null);
+  const [menu, setMenu] = useState<ChatItem | null>(null);
   const [tray, setTray] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+
+  const rec = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<Blob[]>([]);
+  const [recording, setRecording] = useState(false);
+  const [seconds, setSeconds] = useState(0);
 
   /**
    * Land at the newest message, the way opening a chat does — and stay there
@@ -117,10 +125,20 @@ export default function ChatRoom({
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  /** A reply goes to the comments endpoint; everything else is a new message. */
-  async function send(sticker?: string) {
+  /**
+   * A reply goes to the comments endpoint, an edit to the message endpoint,
+   * and everything else is a new post. `attach` carries whichever of sticker,
+   * GIF or recorded audio prompted the send — none of them go through the
+   * text box, so none of them can wait for it.
+   */
+  async function send(attach?: {
+    sticker?: string;
+    gif?: string;
+    audio?: Blob;
+  }) {
     if (busy) return;
-    if (!sticker && !text.trim() && !blob) return;
+    const has = attach?.sticker || attach?.gif || attach?.audio;
+    if (!has && !text.trim() && !blob) return;
 
     setBusy(true);
     setErr("");
@@ -128,19 +146,38 @@ export default function ChatRoom({
     try {
       let res: Response;
 
-      if (replyTo?.postId) {
+      if (editing) {
+        res = await fetch("/api/message", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editing.id,
+            kind: editing.kind,
+            body: text,
+          }),
+        });
+      } else if (replyTo?.postId && !attach?.gif && !attach?.audio) {
+        // comments carry text or a sticker, and nothing else
         res = await fetch("/api/comments", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(
-            sticker
-              ? { post_id: replyTo.postId, sticker }
+            attach?.sticker
+              ? { post_id: replyTo.postId, sticker: attach.sticker }
               : { post_id: replyTo.postId, body: text }
           ),
         });
       } else {
         const form = new FormData();
-        if (sticker) form.set("sticker", sticker);
+        if (attach?.sticker) form.set("sticker", attach.sticker);
+        else if (attach?.gif) form.set("gif", attach.gif);
+        else if (attach?.audio)
+          form.set(
+            "audio",
+            new File([attach.audio], "voice.webm", {
+              type: attach.audio.type || "audio/webm",
+            })
+          );
         else {
           form.set("body", text);
           if (blob)
@@ -153,6 +190,7 @@ export default function ChatRoom({
       if (res.ok) {
         setText("");
         setReplyTo(null);
+        setEditing(null);
         setTray(false);
         clearImage();
         router.refresh();
@@ -167,9 +205,106 @@ export default function ChatRoom({
   }
 
   function reply(item: ChatItem) {
+    setEditing(null);
     setReplyTo(item);
     inputRef.current?.focus();
   }
+
+  async function onMenuPick(action: MenuAction) {
+    const item = menu;
+    setMenu(null);
+    if (!item) return;
+
+    if (action === "reply") return reply(item);
+
+    if (action === "copy") {
+      try {
+        await navigator.clipboard.writeText(item.body ?? "");
+      } catch {
+        setErr("رونوشت نشد.");
+      }
+      return;
+    }
+
+    if (action === "edit") {
+      setReplyTo(null);
+      setEditing(item);
+      setText(item.body ?? "");
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (action === "delete") {
+      setBusy(true);
+      try {
+        const res = await fetch("/api/message", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: item.id, kind: item.kind }),
+        });
+        if (res.ok) router.refresh();
+        else {
+          const j = await res.json().catch(() => ({}));
+          setErr(j.message ?? "حذف نشد.");
+        }
+      } catch {
+        setErr("خطا در ارتباط.");
+      } finally {
+        setBusy(false);
+      }
+    }
+  }
+
+  /* --- voice ------------------------------------------------------------ */
+
+  async function startRecording() {
+    if (recording) return;
+    setErr("");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      chunks.current = [];
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.current.push(e.data);
+      };
+      mr.onstop = () => {
+        // the tracks have to be stopped by hand or the browser keeps showing
+        // the recording indicator long after the message has gone
+        for (const t of stream.getTracks()) t.stop();
+      };
+      rec.current = mr;
+      mr.start();
+      setSeconds(0);
+      setRecording(true);
+    } catch {
+      setErr("به میکروفون دسترسی نداریم.");
+    }
+  }
+
+  function stopRecording(keep: boolean) {
+    const mr = rec.current;
+    if (!mr) return;
+    rec.current = null;
+    setRecording(false);
+
+    mr.addEventListener(
+      "stop",
+      () => {
+        if (!keep || chunks.current.length === 0) return;
+        const audio = new Blob(chunks.current, { type: mr.mimeType || "audio/webm" });
+        chunks.current = [];
+        if (audio.size > 0) send({ audio });
+      },
+      { once: true }
+    );
+    mr.stop();
+  }
+
+  useEffect(() => {
+    if (!recording) return;
+    const t = window.setInterval(() => setSeconds((s) => s + 1), 1000);
+    return () => window.clearInterval(t);
+  }, [recording]);
 
   const canSend = Boolean(text.trim() || blob);
 
@@ -230,6 +365,7 @@ export default function ChatRoom({
                   canReact={signedIn}
                   admin={admin}
                   onReply={reply}
+                  onMenu={signedIn ? setMenu : () => {}}
                 />
               </div>
             );
@@ -241,7 +377,7 @@ export default function ChatRoom({
       {signedIn ? (
         <div className="chat-dock">
           <AnimatePresence>
-            {replyTo && (
+            {(replyTo || editing) && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -251,15 +387,20 @@ export default function ChatRoom({
                 <div className="chat-replying">
                   <div className="min-w-0">
                     <span className="chat-quote-who">
-                      پاسخ به {replyTo.author}
+                      {editing ? "ویرایش پیام" : `پاسخ به ${replyTo!.author}`}
                     </span>
                     <span className="chat-quote-text">
-                      {replyTo.body ?? (replyTo.sticker ? "استیکر" : "عکس")}
+                      {(editing ?? replyTo)!.body ??
+                        ((editing ?? replyTo)!.sticker ? "استیکر" : "عکس")}
                     </span>
                   </div>
                   <button
-                    onClick={() => setReplyTo(null)}
-                    aria-label="بی‌خیال پاسخ"
+                    onClick={() => {
+                      setReplyTo(null);
+                      if (editing) setText("");
+                      setEditing(null);
+                    }}
+                    aria-label="بی‌خیال"
                     className="shrink-0 px-2 text-lg leading-none text-muted"
                   >
                     ×
@@ -286,31 +427,45 @@ export default function ChatRoom({
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="chat-tray">
-                  {STICKERS.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => send(s.id)}
-                      aria-label={s.label}
-                      title={s.label}
-                      className="flex aspect-square items-center justify-center rounded-2xl transition hover:bg-sunk active:scale-90"
-                    >
-                      <Sticker id={s.id} size={44} />
-                    </button>
-                  ))}
-                </div>
+                <ChatTray
+                  onEmoji={(e) => {
+                    setText((t) => t + e);
+                    inputRef.current?.focus();
+                  }}
+                  onSticker={(id) => send({ sticker: id })}
+                  onGif={(url) => send({ gif: url })}
+                />
               </motion.div>
             )}
           </AnimatePresence>
 
           <div className="chat-bar">
+            {/* A sticker mark, not one of the couple's own stickers: the
+                button says what the panel is, and the panel holds the
+                stickers. */}
             <button
               onClick={() => setTray((t) => !t)}
-              aria-label="استیکر"
+              aria-label="ایموجی، استیکر و گیف"
               aria-expanded={tray}
               className={`chat-icon ${tray ? "chat-icon-on" : ""}`}
             >
-              <Sticker id="laugh" size={21} />
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden
+                className="h-[21px] w-[21px] fill-none stroke-current stroke-[1.5]"
+              >
+                <path
+                  d="M21 12a9 9 0 1 0-9 9c.6 0 1.2-.06 1.8-.18L21 13.8c.12-.58.18-1.18.18-1.8Z"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12.6 21c0-3.6.9-5.4 4.2-5.4H21"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path d="M8.5 9.5h.01M15 9.5h.01" strokeLinecap="round" />
+                <path d="M8.6 14.2a4 4 0 0 0 5.2.6" strokeLinecap="round" />
+              </svg>
             </button>
 
             <button
@@ -352,19 +507,62 @@ export default function ChatRoom({
               className="chat-input"
             />
 
-            <button
-              onClick={() => send()}
-              disabled={busy || !canSend}
-              aria-label="ارسال"
-              className="chat-send"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden className="h-[18px] w-[18px] fill-current">
-                {/* points along the reading direction: in RTL the whole bar is
-                    mirrored, so the glyph is flipped with it by the stylesheet */}
-                <path d="M3.4 20.4 21 12 3.4 3.6 3.4 10.2 15.6 12 3.4 13.8Z" />
-              </svg>
-            </button>
+            {/* Send when there is something to send, record when there is not
+                — the swap a messaging app makes, so one button is enough. */}
+            {canSend || editing ? (
+              <button
+                onClick={() => send()}
+                disabled={busy}
+                aria-label={editing ? "ذخیره" : "ارسال"}
+                className="chat-send"
+              >
+                {editing ? (
+                  <svg viewBox="0 0 24 24" aria-hidden className="h-[18px] w-[18px] fill-none stroke-current stroke-[2]">
+                    <path d="m5 12.5 4.5 4.5L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <svg
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                    className="chat-plane h-[18px] w-[18px] fill-current"
+                  >
+                    <path d="M3.4 20.4 21 12 3.4 3.6 3.4 10.2 15.6 12 3.4 13.8Z" />
+                  </svg>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={() => (recording ? stopRecording(true) : startRecording())}
+                disabled={busy}
+                aria-label={recording ? "پایان و ارسال صدا" : "ضبط پیام صوتی"}
+                className={`chat-send ${recording ? "chat-send-rec" : ""}`}
+              >
+                {recording ? (
+                  <svg viewBox="0 0 24 24" aria-hidden className="h-[15px] w-[15px] fill-current">
+                    <rect x="5" y="5" width="14" height="14" rx="2.5" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" aria-hidden className="h-[19px] w-[19px] fill-none stroke-current stroke-[1.6]">
+                    <rect x="9" y="3" width="6" height="11" rx="3" />
+                    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" strokeLinecap="round" />
+                  </svg>
+                )}
+              </button>
+            )}
           </div>
+
+          {recording && (
+            <div className="chat-rec">
+              <span aria-hidden className="chat-rec-dot" />
+              <span className="tabular">
+                {toFa(Math.floor(seconds / 60))}:{toFa(pad2(seconds % 60))}
+              </span>
+              <span className="flex-1 text-muted">در حال ضبط...</span>
+              <button onClick={() => stopRecording(false)} className="text-crimson">
+                لغو
+              </button>
+            </div>
+          )}
 
           {err && (
             <p role="status" className="px-4 pb-2 text-center text-[11.5px] text-crimson">
@@ -384,6 +582,8 @@ export default function ChatRoom({
           </div>
         </div>
       )}
+
+      <ChatMenu item={menu} onPick={onMenuPick} onClose={() => setMenu(null)} />
     </div>
   );
 }

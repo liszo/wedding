@@ -95,12 +95,39 @@ export const photos = {
   },
   "khoncheBg": {
     "src": "/design/photos/khoncheBg.webp",
-    "w": 675,
-    "h": 900,
+    "w": 825,
+    "h": 1100,
     "thumb": "/design/photos/khoncheBg-t.webp",
-    "tw": 375,
-    "th": 500,
-    "alt": ""
+    "tw": 465,
+    "th": 620,
+    "alt": "خونچه‌ی عروس"
+  },
+  "envelope1": {
+    "src": "/design/photos/envelope1.webp",
+    "w": 720,
+    "h": 405,
+    "thumb": "/design/photos/envelope1-t.webp",
+    "tw": 420,
+    "th": 236,
+    "alt": "شقایق و رامین"
+  },
+  "envelope2": {
+    "src": "/design/photos/envelope2.webp",
+    "w": 720,
+    "h": 405,
+    "thumb": "/design/photos/envelope2-t.webp",
+    "tw": 420,
+    "th": 236,
+    "alt": "شقایق و رامین"
+  },
+  "envelope3": {
+    "src": "/design/photos/envelope3.webp",
+    "w": 540,
+    "h": 720,
+    "thumb": "/design/photos/envelope3-t.webp",
+    "tw": 315,
+    "th": 420,
+    "alt": "شقایق و رامین"
   }
 } as const satisfies Record<string, Photo>;
 

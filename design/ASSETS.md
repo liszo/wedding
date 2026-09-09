@@ -48,9 +48,18 @@ npm run assets
 > again without re-deriving what each file is.
 
 `scripts/prepare-assets.ts` crops every photograph, compresses it to WebP at two sizes,
-shrinks the six reaction stickers (1MB of PNG → 88KB of WebP), and writes
+shrinks the stickers (~2MB of PNG each down to a few KB), and writes
 `content/photos.generated.ts` so every `<img>` knows its intrinsic size and nothing
 reflows. Sources and generated output are both committed — Vercel builds from git.
+
+**A sticker exists when it is declared, not when its file appears.** The pipeline walks
+`content/stickers.ts` rather than globbing `design/stickers/`, so dropping a master into
+that folder does nothing until you add it to the list. It used to glob, which meant an
+unreferenced 2MB master silently shipped. A sticker's `file` may differ from its `id`
+when the master's filename is not a slug.
+
+Sticker ids are permanent: comments store them, and a message whose sticker stops
+resolving renders as nothing.
 
 **Photographs keep their own colour.** Only `new-hero.webp` is treated, and only to black
 and white (grayscale plus a small contrast lift), baked in at build time. The wax seal and
@@ -95,7 +104,9 @@ everything else is kept because it may be wanted again.
 | `new-hero.webp` | 1426×2016 | `hero` | **The hero**, full-bleed and uncropped, and the **only** treated photograph — black and white. Couple centre-right, a phone in the foreground, and empty wall panelling top-left; that corner is where the names sit, so do not crop it away. |
 | `bale-boron.jpg` | 800×600 | `baleBoron` | The بله‌برون chapter. (`bale-boron.webp` is a leftover copy of the hero and is no longer referenced.) |
 | `khastegari.webp` | 750×1000 | `proposal` | The خواستگاری chapter. Couple in the hallway, orange-peach bouquet, mirror and lamps behind. (`story-1.jpg` held this slot before and is no longer referenced.) |
-| `khonche.jpg` | 1920×2560 | `khoncheBg` | **Not in the gallery.** Sits behind the روزشمار band. It is not veiled — a floor colour is blended under it with `lighten`, so its shadows flatten to a guaranteed minimum and its highlights come through untouched. See the note in `globals.css`. |
+| `khonche.jpg` | 1920×2560 | `khoncheBg` | **Not in the gallery.** The ground the روزشمار band is printed on, shown almost untouched. Do not try to buy the text's contrast out of this picture — two attempts did and both flattened it into an unidentifiable smudge. The frosted `.band-plate` carries the text instead. |
+| `envelope1.jpg` `envelope2.jpg` | 720×405 | `envelope1` `envelope2` | The two landscape frames that fan out of the envelope when it opens. |
+| `envelope3.jpg` | 540×720 | `envelope3` | The portrait frame, furthest back in that fan and rising highest. |
 | `gallery1.jpg` | 600×800 | `gallery1` | Proposal evening — bouquet, Turkish lamps, hallway. |
 | `gallery2.jpg` | 800×633 | `gallery2` | Seated on the sofreh, wide, both faces to camera. |
 | `gallery3.jpg` | 785×800 | `gallery3` | Seated, looking at each other, chandelier overhead. |

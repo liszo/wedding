@@ -44,7 +44,7 @@ export function Band({
         photo ? "band-on-photo overflow-hidden" : ""
       } ${className}`}
     >
-      {photo && (
+      {photo ? (
         <>
           <div
             aria-hidden
@@ -52,9 +52,12 @@ export function Band({
             style={{ backgroundImage: `url(${photo})` }}
           />
           <div aria-hidden className="band-photo-wash" />
+          {/* the frosted plate the text stands on; see .band-plate */}
+          <div className="band-plate">{children}</div>
         </>
+      ) : (
+        children
       )}
-      {children}
     </section>
   );
 }
@@ -68,11 +71,15 @@ export function Band({
  * page rise into view consistently.
  */
 export function SectionHead({
+  icon,
   label,
   title,
   id,
   className = "",
 }: {
+  /** One emoji, on a line of its own. Inside `.label` it would be set at
+   *  9.5px with 0.42em of tracking, which renders it as an unreadable speck. */
+  icon?: string;
   label?: string;
   title: string;
   id?: string;
@@ -80,6 +87,11 @@ export function SectionHead({
 }) {
   return (
     <Reveal className={`text-center ${className}`}>
+      {icon && (
+        <p aria-hidden className="mb-2 text-[19px] leading-none">
+          {icon}
+        </p>
+      )}
       {label && <p className="label">{label}</p>}
       <h2 id={id} className="nastaliq mt-1 text-[27px] text-ink">
         {title}

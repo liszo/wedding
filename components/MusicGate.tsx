@@ -67,6 +67,9 @@ export default function MusicGate() {
             />
 
             <div className="relative">
+              <p aria-hidden className="mb-3 text-[30px] leading-none">
+                🎶
+              </p>
               <p className="label">پیش از شروع</p>
               <h2
                 id="music-gate-h"
@@ -87,7 +90,7 @@ export default function MusicGate() {
                   onClick={() => choose("yes")}
                   className="rounded-full bg-umber py-3.5 text-[12.5px] tracking-[0.06em] text-white transition hover:bg-ink"
                 >
-                  بله، پخش کن
+                  🎵 بله، پخش کن
                 </button>
                 <button
                   onClick={() => choose("no")}

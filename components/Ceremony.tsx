@@ -8,6 +8,7 @@ export default function Ceremony() {
     <>
       <SectionHead
         id="ceremony-h"
+        icon="📍"
         label="کجا کنار هم باشیم"
         title="مکان مراسم"
         className="mb-9"

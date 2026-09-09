@@ -12,6 +12,7 @@ export default function Programme() {
     <>
       <SectionHead
         id="programme-h"
+        icon="🕰️"
         label="برنامه‌ی شب"
         title="ساعت به ساعت"
         className="mb-10"

@@ -6,9 +6,12 @@ import { getGuest } from "@/lib/guest";
 // than the IP — a household behind one connection should not throttle itself.
 import { tooMany } from "@/lib/rate-limit";
 import { isSticker, stickerUrl } from "@/content/stickers";
+import { isAllowedGifUrl } from "@/lib/media";
 
 const BUCKET = "wall";
 const MAX_BYTES = 3 * 1024 * 1024;
+/** ~2 minutes of Opus at the bitrate the recorder asks for. */
+const MAX_AUDIO_BYTES = 2 * 1024 * 1024;
 
 export async function POST(req: Request) {
   const guest = await getGuest();
@@ -43,13 +46,53 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "ثبت شد." });
   }
 
+  // A GIF is embedded from its own host rather than copied into the bucket —
+  // but only from hosts we name, or this becomes an open image proxy that any
+  // signed-in guest can point anywhere.
+  const gif = form.get("gif");
+  if (typeof gif === "string" && gif) {
+    if (!isAllowedGifUrl(gif))
+      return NextResponse.json({ message: "این گیف پذیرفته نشد." }, { status: 400 });
+
+    const { error } = await db()
+      .from("posts")
+      .insert({ guest_id: guest.id, body: null, image_url: gif });
+
+    if (error)
+      return NextResponse.json({ message: "ثبت نشد." }, { status: 500 });
+    return NextResponse.json({ message: "ثبت شد." });
+  }
+
   const body = String(form.get("body") ?? "").slice(0, 500).trim();
   const file = form.get("image");
+  const voice = form.get("audio");
 
   let image_url: string | null = null;
   let uploadedKey: string | null = null;
 
-  if (file instanceof File && file.size > 0) {
+  if (voice instanceof File && voice.size > 0) {
+    if (voice.size > MAX_AUDIO_BYTES)
+      return NextResponse.json({ message: "صدا خیلی طولانی است." }, { status: 413 });
+
+    // the extension is what marks this as a voice note when it is read back —
+    // see lib/media.ts
+    const ext = voice.type.includes("mp4") ? "m4a" : "webm";
+    const key = `voice/${crypto.randomUUID()}.${ext}`;
+    const bytes = new Uint8Array(await voice.arrayBuffer());
+
+    const { error: upErr } = await db()
+      .storage.from(BUCKET)
+      .upload(key, bytes, { contentType: voice.type || "audio/webm", upsert: false });
+
+    if (upErr)
+      return NextResponse.json(
+        { message: "صدا فرستاده نشد. دوباره تلاش کن." },
+        { status: 500 }
+      );
+
+    uploadedKey = key;
+    image_url = db().storage.from(BUCKET).getPublicUrl(key).data.publicUrl;
+  } else if (file instanceof File && file.size > 0) {
     if (file.size > MAX_BYTES)
       return NextResponse.json({ message: "عکس خیلی بزرگ است." }, { status: 413 });
 

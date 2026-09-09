@@ -5,8 +5,23 @@ export type Sticker = {
   id: string;
   label: string;
   emoji: string;
+  /**
+   * The master in design/stickers/, when it is not simply `<id>.png`. The
+   * newer set arrived with numbered, spaced English filenames; renaming them
+   * would lose the order the artist drew them in, so the id and the file are
+   * allowed to differ and the pipeline reads this.
+   */
+  file?: string;
 };
 
+/**
+ * The first six are the original set. They stay — and keep their ids — because
+ * messages already on the wall reference them, and a sticker that stops
+ * resolving is a message that turns into nothing.
+ *
+ * Reactions no longer use any of these: those are plain emoji now, so the
+ * whole of this list is the sticker tray and nothing else.
+ */
 export const STICKERS: Sticker[] = [
   { id: "heart", label: "دوستتان داریم", emoji: "❤️" },
   { id: "laugh", label: "خنده", emoji: "😂" },
@@ -14,6 +29,20 @@ export const STICKERS: Sticker[] = [
   { id: "clap", label: "دست", emoji: "👏" },
   { id: "dance", label: "برقص", emoji: "💃" },
   { id: "toast", label: "نوش", emoji: "🥂" },
+
+  { id: "honey", label: "عسل", emoji: "🍯", file: "01 — Honey on the finger.png" },
+  { id: "mirror", label: "آینه", emoji: "🪞", file: "02 — The mirror moment.png" },
+  { id: "money", label: "پول‌پاشی", emoji: "💸", file: "03 — Money shower.png" },
+  { id: "fixing", label: "آراستن", emoji: "💐", file: "04 — Fixing each other up.png" },
+  { id: "proposal", label: "خواستگاری", emoji: "💍", file: "05 — The proposal.png" },
+  { id: "carried", label: "در آغوش", emoji: "🤍", file: "06 — Carried away.png" },
+  { id: "confetti", label: "کاغذرنگی", emoji: "🎊", file: "07 — Confetti run.png" },
+  { id: "cheers", label: "به سلامتی", emoji: "🥂", file: "08 — The toast.png" },
+  { id: "cake", label: "بریدن کیک", emoji: "🎂", file: "09 — Cutting the cake.png" },
+  { id: "feeding", label: "لقمه", emoji: "🍰", file: "10 — Feeding each other.png" },
+  { id: "selfie", label: "سلفی", emoji: "🤳", file: "11 — The selfie.png" },
+  { id: "buffet", label: "شام", emoji: "🍽️", file: "12 — Raiding the buffet.png" },
+  { id: "barefoot", label: "نیمه‌شب", emoji: "🌙", file: "13 — Barefoot at midnight.png" },
 ];
 
 export const STICKER_IDS = STICKERS.map((s) => s.id);

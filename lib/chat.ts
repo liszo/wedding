@@ -1,5 +1,6 @@
 import type { WallPost, ReactionState } from "./posts";
 import { stickerIdFromUrl } from "@/content/stickers";
+import { isAudioUrl } from "./media";
 import { toFa, pad2 } from "./fa";
 
 /**
@@ -18,12 +19,16 @@ export type ChatItem = {
   author: string;
   mine: boolean;
   body: string | null;
-  /** a photograph, when the message carries one */
+  /** a photograph or a GIF, when the message carries one */
   photo: string | null;
   /** a sticker id, when the whole message is a sticker */
   sticker: string | null;
+  /** a voice note's URL */
+  voice: string | null;
   /** replies cannot be reacted to or replied to; only top-level messages can */
   postId: string | null;
+  /** which table the row lives in — the edit and delete endpoints need it */
+  kind: "post" | "reply";
   reactions: ReactionState[];
   quote: { author: string; text: string } | null;
 };
@@ -32,6 +37,7 @@ export type ChatItem = {
 function preview(post: WallPost): string {
   if (post.body) return post.body;
   if (stickerIdFromUrl(post.image_url)) return "استیکر";
+  if (isAudioUrl(post.image_url)) return "پیام صوتی";
   if (post.image_url) return "عکس";
   return "پیام";
 }
@@ -41,15 +47,18 @@ export function buildTimeline(posts: WallPost[]): ChatItem[] {
 
   for (const p of posts) {
     const sticker = stickerIdFromUrl(p.image_url);
+    const voice = isAudioUrl(p.image_url) ? p.image_url : null;
     items.push({
       id: p.id,
       at: p.created_at,
       author: p.author,
       mine: p.mine,
       body: p.body,
-      photo: sticker ? null : p.image_url,
+      photo: sticker || voice ? null : p.image_url,
       sticker,
+      voice,
       postId: p.id,
+      kind: "post",
       reactions: p.reactions,
       quote: null,
     });
@@ -63,7 +72,9 @@ export function buildTimeline(posts: WallPost[]): ChatItem[] {
         body: c.body,
         photo: null,
         sticker: c.sticker,
+        voice: null,
         postId: null,
+        kind: "reply",
         reactions: [],
         quote: { author: p.author, text: preview(p) },
       });

@@ -53,7 +53,12 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <Seam />
 
           <Band tone="nude" photo={photos.khoncheBg.src}>
-            <SectionHead label="تا آن روز" title="روزشمار" className="mb-8" />
+            <SectionHead
+              icon="⏳"
+              label="تا آن روز"
+              title="روزشمار"
+              className="mb-8"
+            />
             <Reveal delay={0.05}>
               <Countdown />
             </Reveal>
@@ -91,6 +96,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <Band id="rsvp" labelledBy="rsvp-h">
             <SectionHead
               id="rsvp-h"
+              icon="💌"
               label="مشتاقانه منتظریم"
               title="تأیید حضور"
               className="mb-9"

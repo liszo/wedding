@@ -170,38 +170,42 @@ body {
 .band-photo {
   background-position: center;
   background-size: cover;
-  /* The floor. `lighten` takes the per-channel maximum of the photograph and
-     this colour, so no pixel of the composite can ever be darker than it —
-     the shadows flatten into it and the highlights come through untouched.
-     A wash cannot do this: veiling the picture enough to guarantee the floor
-     is what made it invisible. Blur only averages, so it cannot break the
-     floor either. */
-  background-color: #c3b9ae;
-  background-blend-mode: lighten;
-  filter: blur(2.5px) saturate(0.5);
-  transform: scale(1.06);
+  /* Barely touched. Clamping the photograph's floor and washing it back did
+     guarantee the contrast, but it also flattened the khonche into an
+     unreadable smudge — you could not tell what the picture was of, which is
+     the whole reason for putting one there. Legibility is the plate's job
+     now, not the picture's. */
+  filter: blur(1.1px) saturate(0.88);
+  transform: scale(1.04);
 }
 .band-photo-wash {
   background: var(--nude);
-  opacity: 0.34;
+  opacity: 0.16;
 }
 
-/* The floor still sits well below plain nude, so the lighter tokens are
-   rebound for this band. Rebinding rather than restyling means no component
-   here knows it is over a picture: `@theme inline` compiles the utilities to
-   `color: var(--muted)`, so the override simply cascades into every
-   `text-muted` and every `border-line` inside.
+/* The content of a band that sits on a photograph rides on this: frosted
+   paper, so the text has a ground of its own and the picture stays sharp and
+   whole around it and softly visible through it. */
+.band-plate {
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--white) 55%, var(--line));
+  background: color-mix(in srgb, var(--white) 86%, transparent);
+  backdrop-filter: blur(8px) saturate(1.1);
+  padding: 28px 16px 32px;
+  box-shadow: 0 18px 44px -22px rgba(46, 42, 38, 0.45);
+}
 
-   Measured by compositing the real photograph, floor, wash and paper grain and
-   taking the darkest pixel in the content column — rgb(203,197,190):
-     --ink    unchanged  8.3:1
-     --umber  #3E362F    6.9:1
-     --muted  #4C443C    5.6:1   (the default #74675B would be 3.2:1) */
+/* The plate is translucent, so the darkest part of the photograph still shows
+   faintly through it and the secondary tokens get a nudge darker. Rebinding
+   rather than restyling means no component here knows it is over a picture:
+   `@theme inline` compiles the utilities to `color: var(--muted)`, so the
+   override simply cascades into every `text-muted` inside.
+
+   Measured by compositing the real photograph, wash, grain and plate — see
+   the numbers in README.md. */
 .band-on-photo {
-  --muted: #4c443c;
-  --umber: #3e362f;
-  --line: #cfc2b5;
-  --taupe: #a8968a;
+  --muted: #5b5148;
+  --umber: #443c35;
 }
 
 /* --- type ---------------------------------------------------------------- */
@@ -387,7 +391,7 @@ body {
   bottom: -4px;
   right: -4px;
 }
-.gate.go .g-frame {
+.gate.open .g-frame {
   opacity: 0;
 }
 
@@ -419,17 +423,49 @@ body {
     scale: 1.4;
   }
 }
+/* The names step back while the envelope is open — the photographs coming out
+   of it need the room — but they do not leave, because the guest is still
+   standing here until they choose to go in. */
 .g-head {
   margin-bottom: 34px;
-  transition: opacity 0.7s 1.7s;
+  transition:
+    opacity 0.7s,
+    translate 0.9s cubic-bezier(0.3, 0, 0.3, 1);
+}
+.gate.go .g-head {
+  opacity: 0;
+  translate: 0 -14px;
 }
 .g-foot {
   margin-top: 40px;
+  min-height: 44px;
   transition: opacity 0.5s;
 }
-.gate.go .g-head,
-.gate.go .g-foot {
+.gate.open .g-head,
+.gate.open .g-foot {
   opacity: 0;
+}
+
+/* the way in, once the envelope has finished opening */
+.g-enter {
+  border-radius: 999px;
+  background: var(--umber);
+  padding: 13px 30px;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: var(--white);
+  box-shadow: 0 14px 30px -14px rgba(46, 42, 38, 0.6);
+  animation: enterIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: background 0.2s;
+}
+.g-enter:hover {
+  background: var(--ink);
+}
+@keyframes enterIn {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
 }
 
 .scene {
@@ -585,9 +621,9 @@ body {
   rotate: -17deg;
 }
 .e-bloom img:last-child {
-  right: -12px;
-  bottom: 6px;
-  width: 142px;
+  right: -20px;
+  bottom: 0;
+  width: 152px;
   rotate: 13deg;
 }
 .gate.go .e-bloom img {
@@ -595,7 +631,7 @@ body {
   opacity: 0.95;
 }
 .gate.go .e-bloom img:last-child {
-  translate: 0 -74px;
+  translate: 0 -104px;
 }
 
 /* What is actually in the envelope: two prints and the date, fanned as they
@@ -609,33 +645,50 @@ body {
 }
 .e-pic {
   position: absolute;
-  top: 54px;
   display: block;
-  width: 68px;
-  height: 90px;
   object-fit: cover;
   background: var(--white);
   border: 4px solid var(--white);
-  box-shadow: 0 10px 20px -9px rgba(46, 42, 38, 0.45);
+  box-shadow: 0 12px 24px -10px rgba(46, 42, 38, 0.5);
   transition:
     translate 1.15s 1s cubic-bezier(0.2, 0.75, 0.25, 1),
     rotate 1.15s 1s cubic-bezier(0.2, 0.75, 0.25, 1);
 }
+/* the tall one, furthest back and rising highest */
+.e-pic-c {
+  top: 40px;
+  left: 50%;
+  margin-left: -46px;
+  width: 92px;
+  height: 122px;
+  rotate: -2deg;
+}
+/* the two landscape frames, fanning out either side */
+.e-pic-a,
+.e-pic-b {
+  top: 62px;
+  width: 116px;
+  height: 66px;
+}
 .e-pic-a {
-  left: 48px;
-  rotate: -4deg;
+  left: 16px;
+  rotate: -5deg;
 }
 .e-pic-b {
-  right: 48px;
-  rotate: 4deg;
+  right: 16px;
+  rotate: 5deg;
+}
+.gate.go .e-pic-c {
+  translate: 0 -148px;
+  rotate: -3deg;
 }
 .gate.go .e-pic-a {
-  translate: -24px -106px;
-  rotate: -14deg;
+  translate: -26px -112px;
+  rotate: -16deg;
 }
 .gate.go .e-pic-b {
-  translate: 24px -114px;
-  rotate: 13deg;
+  translate: 26px -120px;
+  rotate: 15deg;
 }
 
 .e-note {
@@ -869,18 +922,11 @@ body {
 .env:hover .seal-mark {
   transform: translate(-50%, -50%) scale(1.06);
 }
-.gate.go .seal-mark {
-  opacity: 0;
-}
-
-.gate.go .e-front,
-.gate.go .e-back,
-.gate.go .e-liner {
-  opacity: 0;
-  transition: opacity 0.5s 1.85s;
-}
-.gate.go .scene {
-  animation: bloom 1.15s 2s cubic-bezier(0.42, 0, 0.25, 1) forwards;
+/* Nothing dissolves on `go` any more. The envelope stays open, holding its
+   photographs, for as long as the guest wants to look at them — the whole
+   scene only leaves once they choose to go in. */
+.gate.open .scene {
+  animation: bloom 1.15s cubic-bezier(0.42, 0, 0.25, 1) forwards;
 }
 @keyframes bloom {
   to {
@@ -1088,11 +1134,120 @@ body {
   line-height: 1;
 }
 
+/* --- the tray: emoji, stickers, GIFs ------------------------------------- */
+
 .chat-tray {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  border-top: 1px solid var(--line);
+}
+.chat-tabs {
+  display: flex;
   gap: 4px;
-  padding: 10px 10px 0;
+  padding: 8px 10px 0;
+}
+.chat-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.chat-tab-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+.chat-tab-on {
+  background: var(--nude-deep);
+  color: var(--ink);
+}
+
+.chat-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  padding: 8px 8px 10px;
+}
+.chat-emoji {
+  display: flex;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 22px;
+  line-height: 1;
+  transition: background 0.15s;
+}
+.chat-emoji:hover {
+  background: var(--nude-deep);
+}
+.chat-emoji:active {
+  scale: 0.88;
+}
+
+/* Three across, not six. The stickers are illustrations of the couple — at a
+   sixth of the width you cannot tell one from another. */
+.chat-sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  max-height: 246px;
+  overflow-y: auto;
+  padding: 8px 8px 10px;
+  overscroll-behavior: contain;
+}
+.chat-sticker {
+  display: flex;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  transition: background 0.15s;
+}
+.chat-sticker:hover {
+  background: var(--nude-deep);
+}
+.chat-sticker:active {
+  scale: 0.9;
+}
+
+.chat-gif {
+  padding: 8px 8px 10px;
+}
+.chat-gif-search {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--nude);
+  padding: 7px 14px;
+  font-size: 12.5px;
+  color: var(--ink);
+  outline: none;
+}
+.chat-gif-note {
+  padding: 26px 12px;
+  text-align: center;
+  font-size: 11.5px;
+  line-height: 2;
+  color: var(--muted);
+}
+.chat-gif-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  max-height: 216px;
+  overflow-y: auto;
+  margin-top: 8px;
+  overscroll-behavior: contain;
+}
+.chat-gif-grid img {
+  height: 76px;
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
 }
 
 .chat-bar {
@@ -1154,9 +1309,154 @@ body {
 .chat-send:disabled {
   opacity: 0.35;
 }
-/* the paper-plane points the way the text runs */
-[dir="rtl"] .chat-send svg {
+/* Only the paper plane is directional — it points the way the text runs. The
+   tick, the microphone and the stop square are not, and a mirrored tick is
+   visibly wrong, so the flip is scoped to the plane rather than to the button. */
+[dir="rtl"] .chat-plane {
   scale: -1 1;
+}
+.chat-send-rec {
+  background: var(--crimson);
+  animation: recPulse 1.6s ease-in-out infinite;
+}
+@keyframes recPulse {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--crimson) 22%, transparent);
+  }
+}
+
+/* --- recording ----------------------------------------------------------- */
+
+.chat-rec {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-top: 1px solid var(--line);
+  padding: 9px 14px;
+  font-size: 11.5px;
+  color: var(--umber);
+}
+.chat-rec-dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 999px;
+  background: var(--crimson);
+  animation: blink 1.2s steps(1, end) infinite;
+}
+
+/* --- a message's own menu ------------------------------------------------ */
+
+/* a long press must not also select the text underneath it */
+.chat-press {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.chat-sheet {
+  width: 100%;
+  max-width: 330px;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--white);
+  padding: 6px;
+  box-shadow: 0 24px 60px -20px rgba(46, 42, 38, 0.55);
+}
+.chat-sheet-peek {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+  padding: 10px 12px 12px;
+  font-size: 11.5px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.chat-sheet button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 11px;
+  border-radius: 13px;
+  padding: 11px 13px;
+  text-align: start;
+  font-size: 13.5px;
+  color: var(--ink);
+  transition: background 0.15s;
+}
+.chat-sheet button:hover {
+  background: var(--nude);
+}
+.chat-sheet button span {
+  width: 18px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+.chat-sheet-bad {
+  color: var(--crimson) !important;
+}
+.chat-sheet-cancel {
+  justify-content: center;
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 14px 14px !important;
+  color: var(--muted) !important;
+}
+
+/* --- voice notes --------------------------------------------------------- */
+
+.voice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 186px;
+  padding: 2px 0 4px;
+}
+.voice-play {
+  display: flex;
+  height: 34px;
+  width: 34px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--umber);
+  color: var(--white);
+}
+.voice-play-mine {
+  background: var(--ink);
+}
+.voice-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+}
+.voice-wave {
+  display: flex;
+  height: 24px;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+}
+.voice-wave span {
+  min-width: 2px;
+  flex: 1;
+  border-radius: 999px;
+  background: var(--umber);
+  transition: opacity 0.15s;
+}
+.voice-time {
+  flex: none;
+  font-size: 10px;
+  color: var(--muted);
 }
 
 /* --- the unfinished chapter ---------------------------------------------- */

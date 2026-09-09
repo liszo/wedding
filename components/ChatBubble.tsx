@@ -1,10 +1,15 @@
 "use client";
+import { useRef } from "react";
 import { motion } from "motion/react";
 import type { ChatItem } from "@/lib/chat";
 import { avatarTone, clockFa, initial } from "@/lib/chat";
 import Sticker from "./Sticker";
 import ChatReactions from "./ChatReactions";
+import VoiceNote from "./VoiceNote";
 import DeletePost from "./DeletePost";
+
+/** how long a touch has to rest before it counts as a long press */
+const HOLD_MS = 420;
 
 /**
  * One message.
@@ -20,6 +25,7 @@ export default function ChatBubble({
   canReact,
   admin,
   onReply,
+  onMenu,
 }: {
   item: ChatItem;
   /** false when the previous message was from the same person */
@@ -27,8 +33,37 @@ export default function ChatBubble({
   canReact: boolean;
   admin: boolean;
   onReply: (item: ChatItem) => void;
+  onMenu: (item: ChatItem) => void;
 }) {
   const { mine } = item;
+  const hold = useRef<number | null>(null);
+
+  /**
+   * Right-click on a pointer, press-and-hold on a touchscreen. The timer is
+   * cancelled by movement as well as by lifting, so scrolling past a message
+   * does not open its menu — a hold that survives a scroll is not a hold.
+   */
+  function startHold() {
+    clearHold();
+    hold.current = window.setTimeout(() => onMenu(item), HOLD_MS);
+  }
+  function clearHold() {
+    if (hold.current !== null) {
+      window.clearTimeout(hold.current);
+      hold.current = null;
+    }
+  }
+
+  const press = {
+    onContextMenu: (e: React.MouseEvent) => {
+      e.preventDefault();
+      onMenu(item);
+    },
+    onTouchStart: startHold,
+    onTouchEnd: clearHold,
+    onTouchMove: clearHold,
+    onTouchCancel: clearHold,
+  };
 
   // A sticker is the whole message: no bubble, no paper behind it. Bubbling a
   // sticker is what makes a chat look like a form.
@@ -61,10 +96,11 @@ export default function ChatBubble({
 
       <div className={`min-w-0 ${mine ? "items-end" : "items-start"} flex flex-col`}>
         <div
+          {...press}
           className={
             bare
-              ? ""
-              : `chat-bubble ${mine ? "chat-mine" : "chat-theirs"} ${
+              ? "chat-press"
+              : `chat-bubble chat-press ${mine ? "chat-mine" : "chat-theirs"} ${
                   showAuthor ? (mine ? "chat-tail-mine" : "chat-tail-theirs") : ""
                 }`
           }
@@ -87,8 +123,10 @@ export default function ChatBubble({
 
           {item.sticker ? (
             <div className={mine ? "text-end" : "text-start"}>
-              <Sticker id={item.sticker} size={104} />
+              <Sticker id={item.sticker} size={148} />
             </div>
+          ) : item.voice ? (
+            <VoiceNote src={item.voice} mine={mine} />
           ) : (
             <>
               {item.photo && (
