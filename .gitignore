@@ -40,9 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-#guests
+#guests — real names and phone numbers, in any format they get exported to
 guest-links.csv
+guest-links.xlsx
 guests.csv
+guests.xlsx
 
 # per-machine Claude Code permission allowlist; .claude/launch.json is shared
 .claude/settings.local.json

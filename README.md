@@ -150,6 +150,17 @@ SITE=https://wedding.yekjapack.com npm run guests
 Commas in a name are fine as long as they are Persian commas (`،`, U+060C). An ASCII
 comma would be read as a column break.
 
+**Phone numbers.** Iranian ones can be written any way — `0912…`, `912…`, `+98912…`,
+Persian digits, dashes — and are stored in the local `09XXXXXXXXX` form. Anything not
+Iranian must carry its country code with a `+`: `+14383355765`. That `+` is the only
+thing distinguishing the two, and a foreign number without its country code is not a
+number anyone can dial. Such rows are rejected rather than stored, and the run ends with
+a list of everything it skipped — a row that does not become a link is a guest who never
+hears from you.
+
+If you edit the CSVs in Excel, save as **CSV UTF-8**, not plain CSV. Plain CSV writes the
+legacy Windows codepage and turns every Persian name into mojibake.
+
 **Re-running it is safe and is how you add people.** Every row is matched on its phone
 number: a guest already in the database keeps the token they already have, so links you
 have already sent out keep working, and only genuinely new rows get a new one.

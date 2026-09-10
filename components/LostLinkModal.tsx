@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { isMobile } from "@/lib/phone";
+import { isValidPhone } from "@/lib/phone";
 
 /* "Are we on the client?", without a setState-in-effect mount flag. */
 const NEVER = () => () => {};
@@ -56,8 +56,9 @@ export default function LostLinkModal() {
     }
   }
 
-  // Accepts 09..., +989..., ۰۹... — all the same number
-  const valid = isMobile(phone);
+  // Accepts 09…, +989…, ۰۹… — all the same number — and +1… for the guests
+  // who are not in Iran
+  const valid = isValidPhone(phone);
 
   /**
    * Rendered into <body>, not in place.
@@ -112,7 +113,7 @@ export default function LostLinkModal() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && submit()}
-                placeholder="09123456789"
+                placeholder="09123456789 یا ‎+1…"
                 className="mb-3 w-full rounded-xl border border-line bg-sunk px-4 py-3 text-center outline-none placeholder:text-muted/50 focus:border-umber"
               />
 

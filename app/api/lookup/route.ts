@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/supabase";
-import { normalizePhone } from "@/lib/phone";
+import { normalizePhone, isValidPhone } from "@/lib/phone";
 import { makeSessionValue, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/session";
 import { tooMany, clientIp } from "@/lib/rate-limit";
 
@@ -14,14 +14,17 @@ export async function POST(req: Request) {
     );
   }
 
-  let phone = "";
+  let raw = "";
   try {
-    phone = normalizePhone(String((await req.json()).phone ?? ""));
+    raw = String((await req.json()).phone ?? "");
   } catch {
     return NextResponse.json(SAME);
   }
 
-  if (phone.length < 11) return NextResponse.json(SAME);
+  // not a length check: a valid number here is either an Iranian 09XXXXXXXXX
+  // or an E.164 one, and those are different lengths
+  if (!isValidPhone(raw)) return NextResponse.json(SAME);
+  const phone = normalizePhone(raw);
 
   const { data } = await db()
     .from("guests")

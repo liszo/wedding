@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { createClient } from "@supabase/supabase-js";
-import { normalizePhone } from "../lib/phone";
+import { normalizePhone, isValidPhone } from "../lib/phone";
 import { makeToken } from "../lib/token";
 import { wedding } from "../content/config";
 
@@ -51,8 +51,13 @@ function parseCsv(file: string): Row[] {
     const display = (parts[2] ?? "").trim();
 
     if (i === 0 && !/^\d/.test(phone.slice(1))) continue;
-    if (!name || phone.length !== 11 || !phone.startsWith("09")) {
-      skipped.push(`${line}  → invalid`);
+    if (!name || !isValidPhone(parts[1] ?? "")) {
+      skipped.push(
+        `${line}  → invalid phone` +
+          (/^\+?\d{7,10}$/.test((parts[1] ?? "").trim()) && !phone.startsWith("09")
+            ? " (foreign number? write it in full with the country code, e.g. +14383355765)"
+            : "")
+      );
       continue;
     }
     if (seen.has(phone)) {
@@ -69,11 +74,25 @@ function parseCsv(file: string): Row[] {
     });
   }
 
-  if (skipped.length) {
-    console.log("\n⚠  Skipped rows:");
-    skipped.forEach((s) => console.log("   " + s));
-  }
+  if (skipped.length) SKIPPED.push(...skipped);
   return rows;
+}
+
+/**
+ * Reported at the very end, not in the middle.
+ *
+ * These used to print above the "✓ N valid guests parsed" line, where a run
+ * that quietly dropped two people looked exactly like a run that worked — the
+ * good news was the last thing on screen. A row that does not become a link is
+ * a guest who never hears from you, so it is the last thing said.
+ */
+const SKIPPED: string[] = [];
+
+function reportSkipped() {
+  if (SKIPPED.length === 0) return;
+  console.log(`\n⚠  ${SKIPPED.length} row(s) SKIPPED — these guests have no link:`);
+  SKIPPED.forEach((s) => console.log("   " + s));
+  console.log("");
 }
 
 async function main() {
@@ -92,6 +111,7 @@ async function main() {
     rows.slice(0, 3).forEach((r) =>
       console.log(`   ${r.name}  ${r.phone}  ${SITE}/i/${r.token}`)
     );
+    reportSkipped();
     return;
   }
 
@@ -166,6 +186,7 @@ async function main() {
   console.log(
     `  hosts (can delete anything on the wall): ${rows.filter((r) => r.host).length}`
   );
+  reportSkipped();
 }
 
 main();
