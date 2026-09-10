@@ -15,10 +15,18 @@ export const wedding = {
   timeFa: "ساعت ۷ عصر",
   durationHours: 5,
 
-  /** Both, always. The ISO one closes the form; the Persian one is what the
-   *  page promises. Move one without the other and the invitation says a date
-   *  the form does not honour. ۲۲ شهریور ۱۴۰۵ = 13 Sep 2026. */
-  rsvpDeadlineISO: "2026-09-13T23:59:00+03:30",
+  /**
+   * When the form stops accepting answers — or `null`, which is now, meaning
+   * it never does. A guest who opens their link late still gets to reply
+   * instead of a closed door and a note telling them to text you.
+   *
+   * `rsvpDeadlineFa` below is unaffected: it is the date the invitation *asks*
+   * for a reply by, which is a request, not a lock. Set this back to an ISO
+   * string and both the form and the API start enforcing it again — they read
+   * the same function.
+   */
+  rsvpDeadlineISO: null as string | null,
+  /** Printed as «لطفاً تا … پاسخ خود را ثبت کنید». ۲۲ شهریور ۱۴۰۵ = 13 Sep 2026. */
   rsvpDeadlineFa: "۲۲ شهریور ۱۴۰۵",
 
   venue: {
