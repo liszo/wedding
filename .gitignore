@@ -46,6 +46,10 @@ guest-links.xlsx
 guests.csv
 guests.xlsx
 
+# Excel's lock file for an open workbook. Not the data itself, but it carries
+# the name of whoever has it open and belongs to nobody's checkout but theirs.
+~$*
+
 # per-machine Claude Code permission allowlist; .claude/launch.json is shared
 .claude/settings.local.json
 

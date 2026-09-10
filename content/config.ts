@@ -15,8 +15,11 @@ export const wedding = {
   timeFa: "ساعت ۷ عصر",
   durationHours: 5,
 
-  rsvpDeadlineISO: "2026-09-09T23:59:00+03:30",
-  rsvpDeadlineFa: "۱۸ شهریور ۱۴۰۵",
+  /** Both, always. The ISO one closes the form; the Persian one is what the
+   *  page promises. Move one without the other and the invitation says a date
+   *  the form does not honour. ۲۲ شهریور ۱۴۰۵ = 13 Sep 2026. */
+  rsvpDeadlineISO: "2026-09-13T23:59:00+03:30",
+  rsvpDeadlineFa: "۲۲ شهریور ۱۴۰۵",
 
   venue: {
     name: "باغ تالار پردیسان",
