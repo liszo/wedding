@@ -26,8 +26,8 @@ export const wedding = {
    * the same function.
    */
   rsvpDeadlineISO: null as string | null,
-  /** Printed as «لطفاً تا … پاسخ خود را ثبت کنید». ۲۲ شهریور ۱۴۰۵ = 13 Sep 2026. */
-  rsvpDeadlineFa: "۲۲ شهریور ۱۴۰۵",
+  /** Printed as «لطفاً تا … پاسخ خود را ثبت کنید». ۲۸ شهریور ۱۴۰۵ = 19 Sep 2026. */
+  rsvpDeadlineFa: "۲۸ شهریور ۱۴۰۵",
 
   venue: {
     name: "باغ تالار پردیسان",
